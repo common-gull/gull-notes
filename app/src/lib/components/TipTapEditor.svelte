@@ -15,7 +15,7 @@
 
 	// Watch for note selection changes
 	$effect(() => {
-		if ($selectedNoteId !== currentNoteId) {
+		if ($selectedNoteId !== currentNoteId && editorState.editor) {
 			loadNote($selectedNoteId);
 		}
 	});
@@ -26,6 +26,10 @@
 		const note = await loadNoteContent(noteId);
 		if (note) {
 			editorState.editor.commands.setContent(note.content.body);
+			currentNoteId = noteId;
+		} else {
+			// If note couldn't be loaded, show empty editor
+			editorState.editor.commands.setContent('');
 			currentNoteId = noteId;
 		}
 	}
@@ -83,7 +87,7 @@
 		editorState.editor = new Editor({
 			element: element,
 			extensions: [StarterKit],
-			content: '<p>Select or create a note to start editing</p>',
+			content: 'Select or create a note to start editing<',
 			onTransaction: () => {
 				// Force re-render for reactivity
 				editorState = { editor: editorState.editor };
@@ -93,10 +97,7 @@
 			}
 		});
 
-		// Load note if one is selected
-		if ($selectedNoteId) {
-			loadNote($selectedNoteId);
-		}
+		// Initial load will be handled by $effect watching selectedNoteId
 	});
 
 	onDestroy(() => {

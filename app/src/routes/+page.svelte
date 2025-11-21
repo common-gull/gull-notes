@@ -48,7 +48,7 @@
 
 		<!-- Main content area -->
 		<main class="flex-1 overflow-hidden">
-			{#if $filteredNotes && $filteredNotes.length > 0}
+			{#if $filteredNotes.length > 0}
 				<TipTapEditor />
 			{:else}
 				<EmptyState />

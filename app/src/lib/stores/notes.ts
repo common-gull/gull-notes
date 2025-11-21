@@ -3,16 +3,20 @@ import { db } from '../db';
 import type { Note, Folder, DecryptedMetadata, DecryptedContent, FolderTree } from '../types';
 import { decryptData } from '../services/encryption';
 import { sessionKeyManager } from '../services/encryption';
-import { writable, derived, get } from 'svelte/store';
+import { writable, derived, get, readable } from 'svelte/store';
 
 /**
  * Store for all notes with decrypted metadata
- * Uses liveQuery to automatically update when database changes
+ * Manually managed to work around liveQuery + key availability reactivity
  */
-export const notesWithMetadata = liveQuery(async () => {
+export const notesWithMetadata = writable<Array<Omit<Note, 'content'>>>([]);
+
+// Function to load and decrypt all notes
+async function loadAllNotes() {
 	const key = sessionKeyManager.getKey();
 	if (!key) {
-		return [];
+		notesWithMetadata.set([]);
+		return;
 	}
 
 	const allNotes = await db.notes.toArray();
@@ -43,7 +47,28 @@ export const notesWithMetadata = liveQuery(async () => {
 	);
 
 	// Filter out failed decryptions and sort by update time
-	return notesWithMeta.filter((n) => n !== null).sort((a, b) => b!.updatedAt - a!.updatedAt);
+	const result = notesWithMeta.filter((n) => n !== null).sort((a, b) => b!.updatedAt - a!.updatedAt);
+	notesWithMetadata.set(result);
+}
+
+// Watch for key availability and load notes when key becomes available
+sessionKeyManager.keyAvailable.subscribe((available) => {
+	if (available) {
+		loadAllNotes();
+	}
+});
+
+// Watch for database changes using Dexie's on() events
+db.notes.hook('creating', () => {
+	loadAllNotes();
+});
+
+db.notes.hook('updating', () => {
+	loadAllNotes();
+});
+
+db.notes.hook('deleting', () => {
+	loadAllNotes();
 });
 
 /**

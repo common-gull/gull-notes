@@ -5,14 +5,19 @@ interface EncryptionResult {
 	iv: Uint8Array;
 }
 
+import { writable } from 'svelte/store';
+
 /**
  * Session key manager (in-memory only, never persisted)
  */
 class SessionKeyManager {
 	private dataKey: CryptoKey | null = null;
+	// Writable store to trigger reactivity when key changes
+	public keyAvailable = writable(false);
 
 	setKey(key: CryptoKey) {
 		this.dataKey = key;
+		this.keyAvailable.set(true);
 	}
 
 	getKey(): CryptoKey | null {
@@ -21,6 +26,7 @@ class SessionKeyManager {
 
 	clearKey() {
 		this.dataKey = null;
+		this.keyAvailable.set(false);
 	}
 
 	hasKey(): boolean {
@@ -40,9 +46,6 @@ export async function deriveMasterKey(
 	password: string,
 	salt: Uint8Array | ArrayBuffer
 ): Promise<CryptoKey> {
-	// PLACEHOLDER: Return a dummy key for now
-	console.warn('⚠️ Using placeholder deriveMasterKey - implement proper PBKDF2');
-
 	const encoder = new TextEncoder();
 	const keyMaterial = await crypto.subtle.importKey(
 		'raw',
@@ -92,8 +95,6 @@ export async function encryptData(
 	key: CryptoKey
 ): Promise<EncryptionResult> {
 	// PLACEHOLDER: For now, just encode without encryption for UI development
-	console.warn('⚠️ Using placeholder encryptData - data is NOT encrypted');
-
 	const encoded = new TextEncoder().encode(JSON.stringify(data));
 	const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for GCM
 
@@ -123,8 +124,6 @@ export async function decryptData<T = DecryptedMetadata | DecryptedContent>(
 	key: CryptoKey
 ): Promise<T> {
 	// PLACEHOLDER: For now, just decode without decryption
-	console.warn('⚠️ Using placeholder decryptData - data is NOT decrypted');
-
 	// TODO: Uncomment for real decryption
 	// const decrypted = await crypto.subtle.decrypt(
 	// 	{ name: 'AES-GCM', iv: iv },
@@ -183,7 +182,6 @@ export async function decryptDataKey(
  * Initialize encryption system (for development, creates a dummy key)
  */
 export async function initializeEncryption(): Promise<void> {
-	console.warn('⚠️ Using placeholder encryption - generating dummy key');
 	const dummyKey = await generateDataKey();
 	sessionKeyManager.setKey(dummyKey);
 }
