@@ -6,7 +6,8 @@
 	import { Plus, Menu, X } from 'lucide-svelte';
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
-	import { filteredNotes, folders, selectedNoteId } from '$lib/stores/notes';
+	import NoteListSkeleton from './NoteListSkeleton.svelte';
+	import { filteredNotes, folders, selectedNoteId, notesLoading } from '$lib/stores/notes';
 	import { db } from '$lib/db';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
@@ -83,10 +84,16 @@
 						<Separator class="my-2" />
 					{/if}
 					<div class="py-2 space-y-1">
-						{#if $filteredNotes}
+						{#if $notesLoading}
+							<NoteListSkeleton />
+						{:else if $filteredNotes.length > 0}
 							{#each $filteredNotes as note (note.id)}
 								<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 							{/each}
+						{:else}
+							<div class="text-center py-8 text-muted-foreground text-sm">
+								No notes found
+							</div>
 						{/if}
 					</div>
 				</ScrollArea>
@@ -110,10 +117,16 @@
 				<Separator class="my-2" />
 			{/if}
 			<div class="py-2 space-y-1">
-				{#if $filteredNotes}
+				{#if $notesLoading}
+					<NoteListSkeleton />
+				{:else if $filteredNotes.length > 0}
 					{#each $filteredNotes as note (note.id)}
 						<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 					{/each}
+				{:else}
+					<div class="text-center py-8 text-muted-foreground text-sm">
+						No notes found
+					</div>
 				{/if}
 			</div>
 		</ScrollArea>

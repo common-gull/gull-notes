@@ -4,7 +4,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import TipTapEditor from '$lib/components/TipTapEditor.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
-	import { filteredNotes } from '$lib/stores/notes';
+	import { filteredNotes, notesLoading } from '$lib/stores/notes';
 	import { initializeEncryption } from '$lib/services/encryption';
 
 	let isMobile = $state(false);
@@ -48,7 +48,9 @@
 
 		<!-- Main content area -->
 		<main class="flex-1 overflow-hidden">
-			{#if $filteredNotes.length > 0}
+			{#if $notesLoading}
+				<EmptyState />
+			{:else if $filteredNotes.length > 0}
 				<TipTapEditor />
 			{:else}
 				<EmptyState />

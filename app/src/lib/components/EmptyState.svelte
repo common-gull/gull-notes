@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { FileText, Plus } from 'lucide-svelte';
+	import { FileText, Plus, Loader2 } from 'lucide-svelte';
 	import { db } from '$lib/db';
-	import { selectedNoteId } from '$lib/stores/notes';
+	import { selectedNoteId, notesLoading } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 
@@ -44,20 +44,35 @@
 	}
 </script>
 
-<div class="flex flex-col items-center justify-center h-full text-center p-8">
-	<div class="rounded-full bg-muted p-6 mb-6">
-		<FileText class="h-12 w-12 text-muted-foreground" />
+{#if $notesLoading}
+	<!-- Loading state -->
+	<div class="flex flex-col items-center justify-center h-full text-center p-8">
+		<div class="rounded-full bg-muted p-6 mb-6 animate-pulse">
+			<Loader2 class="h-12 w-12 text-muted-foreground animate-spin" />
+		</div>
+
+		<h2 class="text-2xl font-semibold mb-2">Loading notes...</h2>
+		<p class="text-muted-foreground mb-6 max-w-sm">
+			Decrypting your notes securely. This may take a moment.
+		</p>
 	</div>
+{:else}
+	<!-- Empty state -->
+	<div class="flex flex-col items-center justify-center h-full text-center p-8">
+		<div class="rounded-full bg-muted p-6 mb-6">
+			<FileText class="h-12 w-12 text-muted-foreground" />
+		</div>
 
-	<h2 class="text-2xl font-semibold mb-2">No notes yet</h2>
-	<p class="text-muted-foreground mb-6 max-w-sm">
-		Start your secure note-taking journey by creating your first note. Your data is encrypted and
-		stored locally.
-	</p>
+		<h2 class="text-2xl font-semibold mb-2">No notes yet</h2>
+		<p class="text-muted-foreground mb-6 max-w-sm">
+			Start your secure note-taking journey by creating your first note. Your data is encrypted and
+			stored locally.
+		</p>
 
-	<Button size="lg" onclick={createFirstNote}>
-		<Plus class="h-5 w-5 mr-2" />
-		Create Your First Note
-	</Button>
-</div>
+		<Button size="lg" onclick={createFirstNote}>
+			<Plus class="h-5 w-5 mr-2" />
+			Create Your First Note
+		</Button>
+	</div>
+{/if}
 

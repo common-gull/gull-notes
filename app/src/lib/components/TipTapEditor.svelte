@@ -3,6 +3,7 @@
 	import { Editor } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
 	import EditorToolbar from './EditorToolbar.svelte';
+	import EditorSkeleton from './EditorSkeleton.svelte';
 	import { selectedNoteId, loadNoteContent } from '$lib/stores/notes';
 	import { db } from '$lib/db';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
@@ -12,25 +13,45 @@
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
 	let currentNoteId = $state<string | null>(null);
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+	let loadingNote = $state<boolean>(false);
+	let loadingPromise: Promise<void> | null = null;
 
 	// Watch for note selection changes
 	$effect(() => {
 		if ($selectedNoteId !== currentNoteId && editorState.editor) {
-			loadNote($selectedNoteId);
+			// Cancel previous load if still in progress
+			if (loadingPromise) {
+				loadingNote = false;
+			}
+			loadingPromise = loadNote($selectedNoteId);
 		}
 	});
 
-	async function loadNote(noteId: string | null) {
+	async function loadNote(noteId: string | null): Promise<void> {
 		if (!noteId || !editorState.editor) return;
 
-		const note = await loadNoteContent(noteId);
-		if (note) {
-			editorState.editor.commands.setContent(note.content.body);
-			currentNoteId = noteId;
-		} else {
-			// If note couldn't be loaded, show empty editor
+		loadingNote = true;
+		try {
+			const note = await loadNoteContent(noteId);
+			// Check if this is still the current request (user didn't switch notes)
+			if ($selectedNoteId !== noteId) return;
+			
+			if (note) {
+				editorState.editor.commands.setContent(note.content.body);
+				currentNoteId = noteId;
+			} else {
+				// If note couldn't be loaded, show empty editor
+				editorState.editor.commands.setContent('');
+				currentNoteId = noteId;
+			}
+		} catch (error) {
+			console.error('Failed to load note:', error);
+			// Show empty editor on error
 			editorState.editor.commands.setContent('');
 			currentNoteId = noteId;
+		} finally {
+			loadingNote = false;
+			loadingPromise = null;
 		}
 	}
 
@@ -77,7 +98,10 @@
 			clearTimeout(saveTimeout);
 		}
 		saveTimeout = setTimeout(() => {
-			saveNote();
+			saveNote().catch((error) => {
+				console.error('Failed to save note:', error);
+				// TODO: Show user notification about failed save
+			});
 		}, 1000); // Save 1 second after user stops typing
 	}
 
@@ -108,10 +132,18 @@
 	});
 </script>
 
-<div class="flex flex-col h-full">
-	<EditorToolbar editor={editorState.editor} />
-	<div class="flex-1 overflow-auto">
-		<div bind:this={element} class="prose prose-sm max-w-none p-6 min-h-full"></div>
+<div class="relative h-full">
+	{#if loadingNote}
+		<div class="absolute inset-0 z-10 bg-background">
+			<EditorSkeleton />
+		</div>
+	{/if}
+
+	<div class="flex flex-col h-full" class:opacity-0={loadingNote}>
+		<EditorToolbar editor={editorState.editor} />
+		<div class="flex-1 overflow-auto">
+			<div bind:this={element} class="prose prose-sm max-w-none p-6 min-h-full"></div>
+		</div>
 	</div>
 </div>
 

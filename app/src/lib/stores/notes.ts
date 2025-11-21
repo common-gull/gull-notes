@@ -11,13 +11,21 @@ import { writable, derived, get, readable } from 'svelte/store';
  */
 export const notesWithMetadata = writable<Array<Omit<Note, 'content'>>>([]);
 
+/**
+ * Store to track if notes are currently loading
+ */
+export const notesLoading = writable<boolean>(true);
+
 // Function to load and decrypt all notes
 async function loadAllNotes() {
 	const key = sessionKeyManager.getKey();
 	if (!key) {
 		notesWithMetadata.set([]);
+		notesLoading.set(false);
 		return;
 	}
+
+	notesLoading.set(true);
 
 	const allNotes = await db.notes.toArray();
 
@@ -49,26 +57,83 @@ async function loadAllNotes() {
 	// Filter out failed decryptions and sort by update time
 	const result = notesWithMeta.filter((n) => n !== null).sort((a, b) => b!.updatedAt - a!.updatedAt);
 	notesWithMetadata.set(result);
+	notesLoading.set(false);
 }
 
-// Watch for key availability and load notes when key becomes available
+// Function to update a single note in the list (when note content changes)
+async function updateSingleNote(noteId: string) {
+	const key = sessionKeyManager.getKey();
+	if (!key) return;
+
+	const encryptedNote = await db.notes.get(noteId);
+	if (!encryptedNote) return;
+
+	try {
+		const metadata = await decryptData<DecryptedMetadata>(
+			encryptedNote.metaCipher,
+			encryptedNote.metaIv,
+			key
+		);
+
+		const updatedNote: Omit<Note, 'content'> = {
+			id: encryptedNote.id,
+			metadata,
+			createdAt: encryptedNote.createdAt,
+			updatedAt: encryptedNote.updatedAt,
+			folderId: undefined
+		};
+
+		// Update the note in the current list
+		notesWithMetadata.update((notes) => {
+			const index = notes.findIndex((n) => n.id === noteId);
+			if (index >= 0) {
+				notes[index] = updatedNote;
+			} else {
+				notes.push(updatedNote);
+			}
+			// Re-sort by update time
+			return notes.sort((a, b) => b.updatedAt - a.updatedAt);
+		});
+	} catch (error) {
+		console.error('Failed to update single note:', error);
+	}
+}
+
+let loadingInProgress: Promise<void> | null = null;
+
+/**
+ * Queue a load operation to prevent race conditions.
+ * Ensures loads happen sequentially by chaining promises.
+ */
+function queueLoadAllNotes(): void {
+	if (loadingInProgress) {
+		// Chain the new load after the current one completes
+		// This ensures sequential execution without parallel loads
+		loadingInProgress = loadingInProgress.then(() => loadAllNotes());
+	} else {
+		// No load in progress, start immediately
+		loadingInProgress = loadAllNotes();
+	}
+}
+
 sessionKeyManager.keyAvailable.subscribe((available) => {
 	if (available) {
-		loadAllNotes();
+		queueLoadAllNotes();
 	}
 });
 
-// Watch for database changes using Dexie's on() events
 db.notes.hook('creating', () => {
-	loadAllNotes();
+	queueLoadAllNotes();
 });
 
-db.notes.hook('updating', () => {
-	loadAllNotes();
+db.notes.hook('updating', (modifications, primKey) => {
+	// Note updated - just update that specific note in the list instead of reloading everything
+	// This prevents flickering when switching between notes
+	void updateSingleNote(primKey as string);
 });
 
 db.notes.hook('deleting', () => {
-	loadAllNotes();
+	queueLoadAllNotes();
 });
 
 /**
