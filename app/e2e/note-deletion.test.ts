@@ -12,7 +12,7 @@ async function createVaultAndLogin(page, vaultName?: string, password = 'TestPas
 	if (!vaultName) {
 		vaultName = getUniqueVaultName();
 	}
-	
+
 	await page.goto('http://localhost:4173/');
 
 	// Create a new vault
