@@ -252,7 +252,12 @@ export function toggleFolder(folderId: string) {
 export const searchQuery = writable<string>('');
 
 /**
- * Filtered notes based on search query
+ * Store for selected tag filters (using Set for efficient lookups)
+ */
+export const selectedTagFilter = writable<Set<string>>(new Set());
+
+/**
+ * Filtered notes based on search query and tag filters
  * Using writable store with manual updates to avoid Observable/Readable type conflicts
  */
 export const filteredNotes = writable<Array<Omit<Note, 'content'>>>([]);
@@ -260,6 +265,7 @@ export const filteredNotes = writable<Array<Omit<Note, 'content'>>>([]);
 // Track both stores and update filtered notes
 let cachedNotes: Array<Omit<Note, 'content'>> = [];
 let cachedQuery: string = '';
+let cachedTagFilter: Set<string> = new Set();
 
 notesWithMetadata.subscribe((notes) => {
 	cachedNotes = notes || [];
@@ -271,23 +277,47 @@ searchQuery.subscribe((query) => {
 	updateFilteredNotes();
 });
 
+selectedTagFilter.subscribe((tags) => {
+	cachedTagFilter = tags;
+	updateFilteredNotes();
+});
+
 function updateFilteredNotes() {
 	if (!cachedNotes || cachedNotes.length === 0) {
 		filteredNotes.set([]);
 		return;
 	}
 
-	if (!cachedQuery || cachedQuery.trim() === '') {
-		filteredNotes.set(cachedNotes);
-		return;
+	// Parse search query for #tag syntax
+	const tagRegex = /#(\w+)/g;
+	let match;
+	const extractedTags = new Set<string>();
+
+	while ((match = tagRegex.exec(cachedQuery)) !== null) {
+		extractedTags.add(match[1].toLowerCase());
 	}
 
-	const query = cachedQuery.toLowerCase().trim();
+	// Remove #tags from query to get remaining text search
+	const textQuery = cachedQuery.replace(tagRegex, '').trim().toLowerCase();
+
+	// Combine extracted tags with selected tag filter
+	const allSelectedTags = new Set([...cachedTagFilter, ...extractedTags]);
+
+	// Apply filters
 	const filtered = cachedNotes.filter((note) => {
-		const titleMatch = note.metadata.title.toLowerCase().includes(query);
-		const tagMatch = note.metadata.tags.some((tag: string) => tag.toLowerCase().includes(query));
-		return titleMatch || tagMatch;
+		// Check tag filter (AND logic - note must have ALL selected tags)
+		const matchesTags =
+			allSelectedTags.size === 0 ||
+			Array.from(allSelectedTags).every((tag) =>
+				note.metadata.tags.some((noteTag: string) => noteTag.toLowerCase() === tag)
+			);
+
+		// Check text search (matches title)
+		const matchesText = !textQuery || note.metadata.title.toLowerCase().includes(textQuery);
+
+		return matchesTags && matchesText;
 	});
+
 	filteredNotes.set(filtered);
 }
 

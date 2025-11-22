@@ -4,17 +4,20 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Plus, Search } from 'lucide-svelte';
+	import { Plus, Search, ArrowLeft } from 'lucide-svelte';
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';
+	import TagFilter from './TagFilter.svelte';
 	import {
 		filteredNotes,
 		folders,
 		selectedNoteId,
 		notesLoading,
 		getActiveDatabase,
-		searchQuery
+		searchQuery,
+		notesWithMetadata,
+		selectedTagFilter
 	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
@@ -77,20 +80,35 @@
 			onOpenChange(false);
 		}
 	}
+
+	function clearAllFilters() {
+		selectedTagFilter.set(new Set());
+		searchQuery.set('');
+	}
+
+	// Compute if filters are active
+	let hasActiveFilters = $derived($selectedTagFilter.size > 0 || $searchQuery.trim() !== '');
+	let filteredCount = $derived($filteredNotes.length);
+	let totalCount = $derived($notesWithMetadata.length);
 </script>
 
 {#if isMobile}
 	<Sheet.Root {open} {onOpenChange}>
-		<Sheet.Content side="left" class="w-[280px] p-0">
+		<Sheet.Content side="left" class="w-full p-0 sm:max-w-sm">
 			<div class="flex h-full flex-col">
 				<div class="flex items-center justify-between p-4">
-					<h2 class="text-lg font-semibold">Notes</h2>
+					<div class="flex items-center gap-2">
+						<Button variant="ghost" size="icon" onclick={() => onOpenChange && onOpenChange(false)}>
+							<ArrowLeft class="h-5 w-5" />
+						</Button>
+						<h2 class="text-lg font-semibold">Notes</h2>
+					</div>
 					<Button size="sm" onclick={createNewNote}>
 						<Plus class="h-4 w-4" />
 					</Button>
 				</div>
 				<Separator />
-				<div class="px-4 py-3">
+				<div class="space-y-3 px-4 py-3">
 					<div class="relative">
 						<Search
 							class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
@@ -102,6 +120,15 @@
 							bind:value={$searchQuery}
 						/>
 					</div>
+					<TagFilter />
+					{#if hasActiveFilters}
+						<div class="flex items-center justify-between text-xs text-muted-foreground">
+							<span>Showing {filteredCount} of {totalCount}</span>
+							<Button variant="ghost" size="sm" onclick={clearAllFilters} class="h-6 text-xs">
+								Clear
+							</Button>
+						</div>
+					{/if}
 				</div>
 				<Separator />
 				<ScrollArea class="flex-1 px-2">
@@ -137,6 +164,24 @@
 			<Button size="sm" onclick={createNewNote}>
 				<Plus class="h-4 w-4" />
 			</Button>
+		</div>
+		<Separator />
+		<div class="space-y-3 px-4 py-3">
+			<div class="relative">
+				<Search
+					class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
+				/>
+				<Input type="search" placeholder="Search notes..." class="pl-9" bind:value={$searchQuery} />
+			</div>
+			<TagFilter />
+			{#if hasActiveFilters}
+				<div class="flex items-center justify-between text-xs text-muted-foreground">
+					<span>Showing {filteredCount} of {totalCount}</span>
+					<Button variant="ghost" size="sm" onclick={clearAllFilters} class="h-6 text-xs">
+						Clear
+					</Button>
+				</div>
+			{/if}
 		</div>
 		<Separator />
 		<ScrollArea class="flex-1 px-2">
