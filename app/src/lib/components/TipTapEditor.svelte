@@ -15,6 +15,16 @@
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let loadingNote = $state<boolean>(false);
 	let loadingPromise: Promise<void> | null = null;
+	let lastContentHash = $state<string>('');
+
+	// Simple hash function for content comparison
+	async function hashContent(content: string): Promise<string> {
+		const encoder = new TextEncoder();
+		const data = encoder.encode(content);
+		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+	}
 
 	// Helper function to convert File/Blob to base64 data URL
 	async function fileToBase64(file: File): Promise<string> {
@@ -84,16 +94,20 @@
 			if (note) {
 				editorState.editor.commands.setContent(note.content.body);
 				currentNoteId = noteId;
+				// Store hash of loaded content
+				lastContentHash = await hashContent(note.content.body);
 			} else {
 				// If note couldn't be loaded, show empty editor
 				editorState.editor.commands.setContent('');
 				currentNoteId = noteId;
+				lastContentHash = await hashContent('');
 			}
 		} catch (error) {
 			console.error('Failed to load note:', error);
 			// Show empty editor on error
 			editorState.editor.commands.setContent('');
 			currentNoteId = noteId;
+			lastContentHash = await hashContent('');
 		} finally {
 			loadingNote = false;
 			loadingPromise = null;
@@ -116,6 +130,12 @@
 		}
 
 		const content = editorState.editor.getHTML();
+		
+		// Compare hash to check if content actually changed
+		const currentHash = await hashContent(content);
+		if (currentHash === lastContentHash) {
+			return; // No changes, skip save
+		}
 
 		// Get current note to preserve metadata
 		const existingNote = await db.notes.get(currentNoteId);
@@ -142,6 +162,9 @@
 			contentIv: contentEncrypted.iv,
 			updatedAt: Date.now()
 		});
+
+		// Update hash after successful save
+		lastContentHash = currentHash;
 	}
 
 	function debouncedSave() {
@@ -153,7 +176,7 @@
 				console.error('Failed to save note:', error);
 				// TODO: Show user notification about failed save
 			});
-		}, 1000); // Save 1 second after user stops typing
+		}, 500); 
 	}
 
 	onMount(() => {
@@ -173,8 +196,11 @@
 				// Force re-render for reactivity
 				editorState = { editor: editorState.editor };
 			},
-			onUpdate: () => {
-				debouncedSave();
+			onUpdate: ({ transaction }) => {
+				// Only trigger save if document content changed
+				if (transaction.docChanged) {
+					debouncedSave();
+				}
 			},
 			editorProps: {
 				handlePaste: (view, event) => {
@@ -256,7 +282,34 @@
 
 	<div class="flex flex-col h-full" class:opacity-0={loadingNote}>
 		<EditorToolbar editor={editorState.editor} />
-		<div class="flex-1 overflow-auto">
+		<div 
+			class="flex-1 overflow-auto editor-container" 
+			role="textbox"
+			tabindex="-1"
+			onclick={(e) => {
+				// Focus editor when clicking anywhere in the container
+				if (editorState.editor && !editorState.editor.isFocused) {
+					// Check if click is on the container or prose wrapper, not on actual content
+					const target = e.target as HTMLElement;
+					if (target.classList.contains('editor-container') || 
+					    target.classList.contains('prose') ||
+					    target.classList.contains('ProseMirror')) {
+						editorState.editor.commands.focus('end');
+					}
+				}
+			}}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					const target = e.target as HTMLElement;
+					if (target.classList.contains('editor-container')) {
+						e.preventDefault();
+						if (editorState.editor) {
+							editorState.editor.commands.focus('end');
+						}
+					}
+				}
+			}}
+		>
 			<div bind:this={element} class="prose prose-sm max-w-none p-6 min-h-full"></div>
 		</div>
 	</div>
@@ -266,6 +319,19 @@
 	:global(.ProseMirror) {
 		outline: none;
 		min-height: 100%;
+		cursor: text;
+	}
+	
+	/* Ensure the prose container is clickable and fills space */
+	.prose {
+		cursor: text;
+	}
+	
+	/* Make all clickable areas focus the editor */
+	.prose:empty::before {
+		content: '';
+		display: block;
+		min-height: 200px;
 	}
 
 	:global(.ProseMirror p.is-editor-empty:first-child::before) {
