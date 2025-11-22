@@ -8,6 +8,7 @@
 	import { db } from '$lib/db';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
+	import Image from '@tiptap/extension-image';
 
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
@@ -15,6 +16,33 @@
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let loadingNote = $state<boolean>(false);
 	let loadingPromise: Promise<void> | null = null;
+
+	// Helper function to convert File/Blob to base64 data URL
+	async function fileToBase64(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result as string);
+			reader.onerror = reject;
+			reader.readAsDataURL(file);
+		});
+	}
+
+	// Helper function to insert image into editor
+	async function insertImage(view: any, file: File, pos?: number) {
+		try {
+			const base64 = await fileToBase64(file);
+			const { schema } = view.state;
+			const node = schema.nodes.image.create({ src: base64 });
+			
+			const transaction = pos !== undefined
+				? view.state.tr.insert(pos, node)
+				: view.state.tr.replaceSelectionWith(node);
+			
+			view.dispatch(transaction);
+		} catch (error) {
+			console.error('Failed to process image:', error);
+		}
+	}
 
 	// Watch for note selection changes
 	$effect(() => {
@@ -110,14 +138,67 @@
 
 		editorState.editor = new Editor({
 			element: element,
-			extensions: [StarterKit],
-			content: 'Select or create a note to start editing<',
+			extensions: [
+				StarterKit,
+				Image.configure({
+					inline: true,
+					allowBase64: true
+				})
+			],
+			content: '<p>Select or create a note to start editing</p>',
 			onTransaction: () => {
 				// Force re-render for reactivity
 				editorState = { editor: editorState.editor };
 			},
 			onUpdate: () => {
 				debouncedSave();
+			},
+			editorProps: {
+				handlePaste: (view, event) => {
+					const items = event.clipboardData?.items;
+					if (!items) return false;
+
+					// Check if there's an image in the clipboard
+					for (let i = 0; i < items.length; i++) {
+						const item = items[i];
+						if (item.type.startsWith('image/')) {
+							const file = item.getAsFile();
+							if (file) {
+								event.preventDefault();
+								insertImage(view, file);
+								return true;
+							}
+						}
+					}
+					return false;
+				},
+				handleDrop: (view, event) => {
+					const files = event.dataTransfer?.files;
+					if (!files || files.length === 0) return false;
+
+					// Check if there's an image in the dropped files
+					for (let i = 0; i < files.length; i++) {
+						const file = files[i];
+						if (file.type.startsWith('image/')) {
+							// Get the position where the image was dropped
+							const coordinates = view.posAtCoords({
+								left: event.clientX,
+								top: event.clientY
+							});
+							
+							// Only handle the event if we have valid coordinates
+							if (coordinates) {
+								event.preventDefault();
+								insertImage(view, file, coordinates.pos);
+								return true;
+							}
+							
+							// If coordinates are invalid, let default behavior handle it
+							return false;
+						}
+					}
+					return false;
+				}
 			}
 		});
 
@@ -159,6 +240,38 @@
 		float: left;
 		height: 0;
 		pointer-events: none;
+	}
+
+	:global(.ProseMirror img) {
+		max-width: 100%;
+		height: auto;
+		border-radius: 0.5rem;
+		margin: 1rem 0;
+		cursor: pointer;
+	}
+
+	:global(.ProseMirror img.ProseMirror-selectednode) {
+		outline: 3px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+
+	/* Reduce excessive spacing in lists */
+	:global(.ProseMirror ul),
+	:global(.ProseMirror ol) {
+		margin-top: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	:global(.ProseMirror ul li),
+	:global(.ProseMirror ol li) {
+		margin-top: 0.125rem;
+		margin-bottom: 0.125rem;
+	}
+
+	:global(.ProseMirror ul li p),
+	:global(.ProseMirror ol li p) {
+		margin-top: 0;
+		margin-bottom: 0;
 	}
 </style>
 
