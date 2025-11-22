@@ -4,6 +4,7 @@ import type { Note, Folder, DecryptedMetadata, DecryptedContent, FolderTree } fr
 import { decryptData } from '../services/encryption';
 import { sessionKeyManager } from '../services/encryption';
 import { writable, derived, get, readable } from 'svelte/store';
+import { activeDatabase as vaultActiveDatabase } from './vault';
 
 /**
  * Active database instance (set by vault system)
@@ -36,6 +37,13 @@ export function setActiveDatabase(db: NotesDatabase | null) {
 		selectedNoteId.set(null);
 	}
 }
+
+// Sync with vault store's activeDatabase
+vaultActiveDatabase.subscribe((db) => {
+	if (db !== activeDb) {
+		setActiveDatabase(db);
+	}
+});
 
 // Function to load and decrypt all notes
 async function loadAllNotes() {

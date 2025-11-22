@@ -1,18 +1,27 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Menu, Search, Lock, Settings } from 'lucide-svelte';
 	import { searchQuery } from '$lib/stores/notes';
+	import { lockVault } from '$lib/stores/vault';
 
 	interface Props {
 		onMenuClick?: () => void;
 		showMenuButton?: boolean;
-		onLock?: () => void;
-		onSettings?: () => void;
 		vaultName?: string;
 	}
 
-	let { onMenuClick, showMenuButton = false, onLock, onSettings, vaultName }: Props = $props();
+	let { onMenuClick, showMenuButton = false, vaultName }: Props = $props();
+
+	async function handleLock() {
+		lockVault();
+		await goto('/');
+	}
+
+	async function handleSettings() {
+		await goto('/vault/settings');
+	}
 </script>
 
 <header class="border-b bg-background px-4 py-3 flex items-center gap-4">
@@ -42,10 +51,10 @@
 	</div>
 
 	<div class="flex items-center gap-2">
-		<Button variant="ghost" size="icon" title="Settings" onclick={onSettings}>
+		<Button variant="ghost" size="icon" title="Settings" onclick={handleSettings}>
 			<Settings class="h-5 w-5" />
 		</Button>
-		<Button variant="ghost" size="icon" title="Lock Vault" onclick={onLock}>
+		<Button variant="ghost" size="icon" title="Lock Vault" onclick={handleLock}>
 			<Lock class="h-5 w-5" />
 		</Button>
 	</div>
