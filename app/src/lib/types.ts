@@ -108,3 +108,10 @@ export interface EncryptedKeyData {
 	keyIv: Uint8Array;
 	salt: Uint8Array;
 }
+
+/**
+ * Vault settings (encrypted and stored per-vault)
+ */
+export interface VaultSettings {
+	inactivityTimeout: number; // Minutes until auto-lock (0 = disabled)
+}

@@ -3,6 +3,8 @@ import type { VaultInfo } from '$lib/types';
 import type { NotesDatabase } from '$lib/db';
 import { openVault, getVaultMetadata } from '$lib/services/vaults';
 import { sessionKeyManager } from '$lib/services/encryption';
+import { getVaultSettings } from '$lib/services/vault-settings';
+import { startMonitoring, stopMonitoring } from './inactivity';
 
 interface VaultState {
 	selectedVaultForUnlock: VaultInfo | null;
@@ -62,6 +64,15 @@ export async function unlockVault(vaultId: string, password: string): Promise<No
 		activeDatabase: db
 	}));
 
+	// Load vault settings and start inactivity monitoring
+	try {
+		const settings = await getVaultSettings(db);
+		startMonitoring(settings.inactivityTimeout);
+	} catch (error) {
+		console.error('Failed to load vault settings for inactivity monitoring:', error);
+		// Continue even if settings load fails
+	}
+
 	return db;
 }
 
@@ -70,6 +81,9 @@ export async function unlockVault(vaultId: string, password: string): Promise<No
  */
 export function lockVault(): void {
 	const state = get(vaultState);
+
+	// Stop inactivity monitoring
+	stopMonitoring();
 
 	// Clear session key
 	sessionKeyManager.clearKey();
@@ -104,6 +118,15 @@ export function activateVault(
 		activeVault: vaultInfo,
 		activeDatabase: db
 	}));
+
+	// Load vault settings and start inactivity monitoring for new vaults
+	getVaultSettings(db)
+		.then((settings) => {
+			startMonitoring(settings.inactivityTimeout);
+		})
+		.catch((error) => {
+			console.error('Failed to load vault settings for inactivity monitoring:', error);
+		});
 }
 
 // Export individual stores

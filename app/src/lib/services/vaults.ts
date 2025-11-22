@@ -310,6 +310,35 @@ export async function changeVaultPassword(
 			await newVault.settings.put(folderSettings);
 		}
 
+		// Copy and re-encrypt vault settings if they exist
+		const vaultSettingsRecord = await oldVault.settings.get('vault_settings');
+		if (vaultSettingsRecord?.data) {
+			const { decryptSettings, encryptSettings } = await import('./encryption');
+
+			// Decrypt with old key
+			const oldSettingsData = vaultSettingsRecord.data as {
+				ciphertext: ArrayBuffer;
+				iv: Uint8Array;
+			};
+			const settings = await decryptSettings(
+				oldSettingsData.ciphertext,
+				oldSettingsData.iv,
+				oldDataKey
+			);
+
+			// Encrypt with new key
+			const newEncrypted = await encryptSettings(settings, newDataKey);
+
+			// Store in new vault
+			await newVault.settings.put({
+				id: 'vault_settings',
+				data: {
+					ciphertext: newEncrypted.ciphertext,
+					iv: newEncrypted.iv
+				}
+			});
+		}
+
 		// Phase 4: Verification
 		// CRITICAL: Verify note count matches before proceeding
 		const newVaultNoteCount = await newVault.notes.count();

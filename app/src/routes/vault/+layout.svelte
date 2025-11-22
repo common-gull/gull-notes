@@ -6,6 +6,7 @@
 	import TitleBar from '$lib/components/TitleBar.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { activeVault } from '$lib/stores/vault';
+	import { resetActivity } from '$lib/stores/inactivity';
 
 	let { children } = $props();
 
@@ -23,6 +24,13 @@
 
 	function toggleSidebar() {
 		sidebarCollapsed = !sidebarCollapsed;
+	}
+
+	// Handle user activity for inactivity detection
+	function handleActivity() {
+		if ($activeVault) {
+			resetActivity();
+		}
 	}
 
 	// Routes that don't require an unlocked vault
@@ -45,8 +53,14 @@
 		// Listen for resize events
 		window.addEventListener('resize', handleResize);
 
+		// Listen for keyboard and mouse activity to reset inactivity timer
+		window.addEventListener('keydown', handleActivity);
+		window.addEventListener('mousedown', handleActivity);
+
 		return () => {
 			window.removeEventListener('resize', handleResize);
+			window.removeEventListener('keydown', handleActivity);
+			window.removeEventListener('mousedown', handleActivity);
 		};
 	});
 

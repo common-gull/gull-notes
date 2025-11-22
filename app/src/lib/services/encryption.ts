@@ -202,3 +202,40 @@ export async function retrieveEncryptedDataKey(
 	if (!record) return null;
 	return record.data as { encryptedKey: ArrayBuffer; keyIv: Uint8Array; salt: Uint8Array };
 }
+
+/**
+ * Encrypt generic settings data using AES-256-GCM
+ * @param settings Settings object to encrypt (will be JSON stringified)
+ * @param key CryptoKey for encryption
+ * @returns Ciphertext and IV
+ */
+export async function encryptSettings<T>(settings: T, key: CryptoKey): Promise<EncryptionResult> {
+	const encoded = new TextEncoder().encode(JSON.stringify(settings));
+	const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for GCM
+
+	const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, encoded);
+
+	return { ciphertext, iv };
+}
+
+/**
+ * Decrypt generic settings data using AES-256-GCM
+ * @param ciphertext Encrypted settings data
+ * @param iv Initialization vector
+ * @param key CryptoKey for decryption
+ * @returns Decrypted settings object
+ */
+export async function decryptSettings<T>(
+	ciphertext: ArrayBuffer,
+	iv: Uint8Array | ArrayBuffer,
+	key: CryptoKey
+): Promise<T> {
+	const decrypted = await crypto.subtle.decrypt(
+		{ name: 'AES-GCM', iv: iv as BufferSource },
+		key,
+		ciphertext
+	);
+
+	const decoded = new TextDecoder().decode(decrypted);
+	return JSON.parse(decoded) as T;
+}

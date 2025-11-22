@@ -6,6 +6,7 @@
 	import { getActiveDatabase } from '$lib/stores/notes';
 	import { changeVaultPassword, deleteVault, exportVault } from '$lib/services/vaults';
 	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
+	import { getVaultSettings, updateVaultSettings } from '$lib/services/vault-settings';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import {
 		ArrowLeftIcon,
@@ -16,7 +17,8 @@
 		InfoIcon,
 		ShieldIcon,
 		TrashIcon,
-		Download
+		Download,
+		ClockIcon
 	} from 'lucide-svelte';
 
 	let noteCount = $state(0);
@@ -30,6 +32,10 @@
 	let exportPassword = $state('');
 	let showExportPassword = $state(false);
 	let exportError = $state<string | null>(null);
+
+	// Auto-lock settings
+	let inactivityTimeout = $state(0);
+	let savingSettings = $state(false);
 
 	// Password change state
 	let currentPassword = $state('');
@@ -87,6 +93,36 @@
 		if (db) {
 			const count = await db.notes.count();
 			noteCount = count;
+
+			// Load vault settings
+			try {
+				const settings = await getVaultSettings(db);
+				inactivityTimeout = settings.inactivityTimeout;
+			} catch (err) {
+				console.error('Failed to load vault settings:', err);
+			}
+		}
+	}
+
+	async function handleInactivityTimeoutChange(e: Event) {
+		const target = e.target as HTMLSelectElement;
+		const newTimeout = parseInt(target.value, 10);
+
+		savingSettings = true;
+		try {
+			const db = getActiveDatabase();
+			if (db) {
+				await updateVaultSettings(db, { inactivityTimeout: newTimeout });
+				inactivityTimeout = newTimeout;
+
+				// Restart monitoring with new timeout
+				const { startMonitoring } = await import('$lib/stores/inactivity');
+				startMonitoring(newTimeout);
+			}
+		} catch (err) {
+			console.error('Failed to save settings:', err);
+		} finally {
+			savingSettings = false;
 		}
 	}
 
@@ -554,6 +590,46 @@
 							{/if}
 						</div>
 					{/if}
+				</section>
+
+				<!-- Auto-Lock Section -->
+				<section class="space-y-4">
+					<div class="flex items-center gap-2">
+						<ClockIcon class="h-5 w-5 text-primary" />
+						<h2 class="text-2xl font-bold">Auto-Lock</h2>
+					</div>
+
+					<div class="rounded-lg bg-muted/50 p-6">
+						<div class="space-y-4">
+							<div>
+								<h3 class="mb-1 text-lg font-semibold">Inactivity Timeout</h3>
+								<p class="text-sm text-muted-foreground">
+									Automatically lock the vault after a period of inactivity
+								</p>
+							</div>
+
+							<div class="space-y-2">
+								<label for="inactivity-timeout" class="text-sm font-medium">Lock after</label>
+								<select
+									id="inactivity-timeout"
+									bind:value={inactivityTimeout}
+									onchange={handleInactivityTimeoutChange}
+									disabled={savingSettings}
+									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+								>
+									<option value={0}>Never</option>
+									<option value={5}>5 minutes</option>
+									<option value={10}>10 minutes</option>
+									<option value={15}>15 minutes</option>
+									<option value={30}>30 minutes</option>
+								</select>
+							</div>
+
+							{#if savingSettings}
+								<p class="text-sm text-muted-foreground">Saving...</p>
+							{/if}
+						</div>
+					</div>
 				</section>
 
 				<!-- Danger Zone Section -->
