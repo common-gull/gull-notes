@@ -23,7 +23,7 @@
 </script>
 
 {#if editor}
-	<div class="flex flex-wrap items-center gap-1 border-b bg-background px-4 py-2">
+	<div class="flex items-center gap-1 overflow-x-auto border-b bg-background px-4 py-2">
 		<Button
 			variant="ghost"
 			size="sm"

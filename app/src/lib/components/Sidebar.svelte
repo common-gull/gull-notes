@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Plus } from 'lucide-svelte';
+	import { Plus, Search } from 'lucide-svelte';
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';
@@ -12,7 +13,8 @@
 		folders,
 		selectedNoteId,
 		notesLoading,
-		getActiveDatabase
+		getActiveDatabase,
+		searchQuery
 	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
@@ -85,6 +87,20 @@
 					<Button size="sm" onclick={createNewNote}>
 						<Plus class="h-4 w-4" />
 					</Button>
+				</div>
+				<Separator />
+				<div class="px-4 py-3">
+					<div class="relative">
+						<Search
+							class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
+						/>
+						<Input
+							type="search"
+							placeholder="Search notes..."
+							class="pl-9"
+							bind:value={$searchQuery}
+						/>
+					</div>
 				</div>
 				<Separator />
 				<ScrollArea class="flex-1 px-2">

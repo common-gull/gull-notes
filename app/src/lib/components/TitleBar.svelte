@@ -39,16 +39,18 @@
 		{/if}
 	</div>
 
-	<div class="mx-auto max-w-md flex-1">
-		<div class="relative">
-			<Search
-				class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
-			/>
-			<Input type="search" placeholder="Search notes..." class="pl-9" bind:value={$searchQuery} />
+	{#if !showMenuButton}
+		<div class="mx-auto max-w-md flex-1">
+			<div class="relative">
+				<Search
+					class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
+				/>
+				<Input type="search" placeholder="Search notes..." class="pl-9" bind:value={$searchQuery} />
+			</div>
 		</div>
-	</div>
+	{/if}
 
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-2 {showMenuButton ? 'ml-auto' : ''}">
 		<Button variant="ghost" size="icon" title="Settings" onclick={handleSettings}>
 			<Settings class="h-5 w-5" />
 		</Button>
