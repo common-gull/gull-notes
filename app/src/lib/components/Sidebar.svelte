@@ -7,7 +7,13 @@
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';
-	import { filteredNotes, folders, selectedNoteId, notesLoading, getActiveDatabase } from '$lib/stores/notes';
+	import {
+		filteredNotes,
+		folders,
+		selectedNoteId,
+		notesLoading,
+		getActiveDatabase
+	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 
@@ -71,11 +77,11 @@
 </script>
 
 {#if isMobile}
-	<Sheet.Root {open} onOpenChange={onOpenChange}>
+	<Sheet.Root {open} {onOpenChange}>
 		<Sheet.Content side="left" class="w-[280px] p-0">
-			<div class="flex flex-col h-full">
-				<div class="p-4 flex items-center justify-between">
-					<h2 class="font-semibold text-lg">Notes</h2>
+			<div class="flex h-full flex-col">
+				<div class="flex items-center justify-between p-4">
+					<h2 class="text-lg font-semibold">Notes</h2>
 					<Button size="sm" onclick={createNewNote}>
 						<Plus class="h-4 w-4" />
 					</Button>
@@ -88,7 +94,7 @@
 						</div>
 						<Separator class="my-2" />
 					{/if}
-					<div class="py-2 space-y-1">
+					<div class="space-y-1 py-2">
 						{#if $notesLoading}
 							<NoteListSkeleton />
 						{:else if $filteredNotes.length > 0}
@@ -96,9 +102,7 @@
 								<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 							{/each}
 						{:else}
-							<div class="text-center py-8 text-muted-foreground text-sm">
-								No notes found
-							</div>
+							<div class="py-8 text-center text-sm text-muted-foreground">No notes found</div>
 						{/if}
 					</div>
 				</ScrollArea>
@@ -106,9 +110,9 @@
 		</Sheet.Content>
 	</Sheet.Root>
 {:else}
-	<aside class="w-[280px] border-r bg-sidebar border-sidebar-border flex flex-col h-full">
-		<div class="p-4 flex items-center justify-between">
-			<h2 class="font-semibold text-lg">Notes</h2>
+	<aside class="flex h-full w-[280px] flex-col border-r border-sidebar-border bg-sidebar">
+		<div class="flex items-center justify-between p-4">
+			<h2 class="text-lg font-semibold">Notes</h2>
 			<Button size="sm" onclick={createNewNote}>
 				<Plus class="h-4 w-4" />
 			</Button>
@@ -121,7 +125,7 @@
 				</div>
 				<Separator class="my-2" />
 			{/if}
-			<div class="py-2 space-y-1">
+			<div class="space-y-1 py-2">
 				{#if $notesLoading}
 					<NoteListSkeleton />
 				{:else if $filteredNotes.length > 0}
@@ -129,12 +133,9 @@
 						<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 					{/each}
 				{:else}
-					<div class="text-center py-8 text-muted-foreground text-sm">
-						No notes found
-					</div>
+					<div class="py-8 text-center text-sm text-muted-foreground">No notes found</div>
 				{/if}
 			</div>
 		</ScrollArea>
 	</aside>
 {/if}
-

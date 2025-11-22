@@ -37,9 +37,7 @@
 	});
 
 	let isValid = $derived(
-		vaultName.trim().length > 0 &&
-		password.length >= 8 &&
-		password === confirmPassword
+		vaultName.trim().length > 0 && password.length >= 8 && password === confirmPassword
 	);
 
 	async function handleCreate() {
@@ -69,23 +67,25 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
-	<div class="w-full max-w-md bg-card border border-border rounded-lg shadow-lg">
-		<div class="flex items-center justify-between p-6 border-b border-border">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background p-4">
+	<div class="w-full max-w-md rounded-lg border border-border bg-card shadow-lg">
+		<div class="flex items-center justify-between border-b border-border p-6">
 			<h2 class="text-2xl font-bold">Create New Vault</h2>
 			<button
 				onclick={onCancel}
-				class="text-muted-foreground hover:text-foreground transition-colors"
+				class="text-muted-foreground transition-colors hover:text-foreground"
 				disabled={creating}
 			>
-				<XIcon class="w-5 h-5" />
+				<XIcon class="h-5 w-5" />
 			</button>
 		</div>
 
-		<div class="p-6 space-y-4">
+		<div class="space-y-4 p-6">
 			{#if error}
-				<div class="bg-destructive/10 text-destructive rounded-lg p-3 text-sm flex items-start gap-2">
-					<AlertCircleIcon class="w-4 h-4 flex-shrink-0 mt-0.5" />
+				<div
+					class="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+				>
+					<AlertCircleIcon class="mt-0.5 h-4 w-4 flex-shrink-0" />
 					<span>{error}</span>
 				</div>
 			{/if}
@@ -116,7 +116,7 @@
 				/>
 				{#if password}
 					<div class="flex items-center gap-2 text-sm">
-						<div class="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+						<div class="h-2 flex-1 overflow-hidden rounded-full bg-muted">
 							<div
 								class="h-full bg-primary transition-all duration-300"
 								style="width: {(passwordStrength.score / 5) * 100}%"
@@ -138,21 +138,21 @@
 					disabled={creating}
 				/>
 				{#if confirmPassword && password !== confirmPassword}
-					<p class="text-sm text-destructive flex items-center gap-1">
-						<XIcon class="w-3 h-3" />
+					<p class="flex items-center gap-1 text-sm text-destructive">
+						<XIcon class="h-3 w-3" />
 						Passwords do not match
 					</p>
 				{:else if confirmPassword && password === confirmPassword}
-					<p class="text-sm text-green-500 flex items-center gap-1">
-						<CheckIcon class="w-3 h-3" />
+					<p class="flex items-center gap-1 text-sm text-green-500">
+						<CheckIcon class="h-3 w-3" />
 						Passwords match
 					</p>
 				{/if}
 			</div>
 
-			<div class="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
+			<div class="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
 				<p class="mb-1">Password requirements:</p>
-				<ul class="list-disc list-inside space-y-0.5">
+				<ul class="list-inside list-disc space-y-0.5">
 					<li class={password.length >= 8 ? 'text-green-500' : ''}>At least 8 characters</li>
 					<li>Mix of uppercase and lowercase letters</li>
 					<li>Include numbers and special characters</li>
@@ -160,22 +160,15 @@
 			</div>
 		</div>
 
-		<div class="flex gap-3 p-6 border-t border-border">
-			<Button
-				onclick={onCancel}
-				variant="outline"
-				class="flex-1"
-				disabled={creating}
-			>
+		<div class="flex gap-3 border-t border-border p-6">
+			<Button onclick={onCancel} variant="outline" class="flex-1" disabled={creating}>
 				Cancel
 			</Button>
-			<Button
-				onclick={handleCreate}
-				class="flex-1"
-				disabled={!isValid || creating}
-			>
+			<Button onclick={handleCreate} class="flex-1" disabled={!isValid || creating}>
 				{#if creating}
-					<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></span>
+					<span
+						class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+					></span>
 					Creating...
 				{:else}
 					Create Vault
@@ -184,4 +177,3 @@
 		</div>
 	</div>
 </div>
-

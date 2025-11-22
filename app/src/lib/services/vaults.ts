@@ -137,11 +137,11 @@ export async function openVault(vaultId: string, password: string): Promise<Note
 export async function deleteVault(vaultId: string): Promise<void> {
 	const databases = await indexedDB.databases();
 	const exists = databases.some((db) => db.name === vaultId);
-	
+
 	if (!exists) {
 		return; // Vault doesn't exist, nothing to delete
 	}
-	
+
 	return new Promise<void>((resolve, reject) => {
 		const request = indexedDB.deleteDatabase(vaultId);
 		request.onsuccess = () => resolve();
@@ -177,7 +177,7 @@ export async function listAllDatabases(): Promise<string[]> {
 	}
 
 	const databases = await indexedDB.databases();
-	return databases.map(db => db.name).filter((name): name is string => name !== undefined);
+	return databases.map((db) => db.name).filter((name): name is string => name !== undefined);
 }
 
 /**
@@ -320,10 +320,10 @@ export async function changeVaultPassword(
 		}
 
 		// Verify all note IDs are present
-		const oldNoteIds = new Set((await oldVault.notes.toArray()).map(n => n.id));
-		const newNoteIds = new Set((await newVault.notes.toArray()).map(n => n.id));
-		
-		const missingIds = [...oldNoteIds].filter(id => !newNoteIds.has(id));
+		const oldNoteIds = new Set((await oldVault.notes.toArray()).map((n) => n.id));
+		const newNoteIds = new Set((await newVault.notes.toArray()).map((n) => n.id));
+
+		const missingIds = [...oldNoteIds].filter((id) => !newNoteIds.has(id));
 		if (missingIds.length > 0) {
 			throw new Error(
 				`Missing ${missingIds.length} note(s) in new vault! IDs: ${missingIds.join(', ')}. Aborting.`
@@ -338,7 +338,7 @@ export async function changeVaultPassword(
 
 		// Try to open new vault with new password
 		const testVault = await openVault(newVaultId, newPassword);
-		
+
 		// Verify by decrypting a random sample of notes (or all if few)
 		const notesToVerify = Math.min(5, total); // Verify up to 5 random notes
 		if (notesToVerify > 0) {
@@ -388,4 +388,3 @@ export async function changeVaultPassword(
 		throw error;
 	}
 }
-

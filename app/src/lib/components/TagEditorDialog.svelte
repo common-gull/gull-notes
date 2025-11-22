@@ -19,13 +19,10 @@
 	// Filter existing tags based on input
 	let filteredSuggestions = $derived.by(() => {
 		if (!inputValue.trim()) return [];
-		
+
 		const query = inputValue.toLowerCase().trim();
 		return $allExistingTags
-			.filter(tag => 
-				tag.toLowerCase().includes(query) && 
-				!currentTags.includes(tag)
-			)
+			.filter((tag) => tag.toLowerCase().includes(query) && !currentTags.includes(tag))
 			.slice(0, 5); // Limit to 5 suggestions
 	});
 
@@ -39,7 +36,7 @@
 	}
 
 	function removeTag(tagToRemove: string) {
-		currentTags = currentTags.filter(tag => tag !== tagToRemove);
+		currentTags = currentTags.filter((tag) => tag !== tagToRemove);
 	}
 
 	function handleInputKeydown(e: KeyboardEvent) {
@@ -78,31 +75,33 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-	<div class="w-full max-w-md bg-card border border-border rounded-lg shadow-lg">
-		<div class="flex items-center justify-between p-6 border-b border-border">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+	<div class="w-full max-w-md rounded-lg border border-border bg-card shadow-lg">
+		<div class="flex items-center justify-between border-b border-border p-6">
 			<h2 class="text-xl font-bold">Manage Tags</h2>
 			<button
 				onclick={onClose}
-				class="text-muted-foreground hover:text-foreground transition-colors"
+				class="text-muted-foreground transition-colors hover:text-foreground"
 			>
-				<XIcon class="w-5 h-5" />
+				<XIcon class="h-5 w-5" />
 			</button>
 		</div>
 
-		<div class="p-6 space-y-4">
+		<div class="space-y-4 p-6">
 			<!-- Current tags display -->
 			{#if currentTags.length > 0}
-				<div class="flex flex-wrap gap-2 mb-4">
+				<div class="mb-4 flex flex-wrap gap-2">
 					{#each currentTags as tag}
-						<span class="inline-flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm">
+						<span
+							class="inline-flex items-center gap-1 rounded bg-secondary px-2 py-1 text-sm text-secondary-foreground"
+						>
 							{tag}
 							<button
 								onclick={() => removeTag(tag)}
-								class="hover:text-destructive transition-colors"
+								class="transition-colors hover:text-destructive"
 								type="button"
 							>
-								<XIcon class="w-3 h-3" />
+								<XIcon class="h-3 w-3" />
 							</button>
 						</span>
 					{/each}
@@ -129,17 +128,19 @@
 							size="sm"
 							type="button"
 						>
-							<PlusIcon class="w-4 h-4" />
+							<PlusIcon class="h-4 w-4" />
 						</Button>
 					</div>
-					
+
 					<!-- Autocomplete dropdown -->
 					{#if showAutocomplete && filteredSuggestions.length > 0}
-						<div class="absolute z-10 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+						<div
+							class="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-border bg-popover shadow-lg"
+						>
 							{#each filteredSuggestions as suggestion}
 								<button
 									type="button"
-									class="w-full text-left px-3 py-2 hover:bg-accent transition-colors text-sm"
+									class="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
 									onmousedown={(e) => {
 										e.preventDefault();
 										addTag(suggestion);
@@ -158,14 +159,9 @@
 		</div>
 
 		<!-- Footer with actions -->
-		<div class="flex justify-end gap-2 p-6 border-t border-border">
-			<Button variant="outline" onclick={onClose}>
-				Cancel
-			</Button>
-			<Button onclick={handleSave}>
-				Save Tags
-			</Button>
+		<div class="flex justify-end gap-2 border-t border-border p-6">
+			<Button variant="outline" onclick={onClose}>Cancel</Button>
+			<Button onclick={handleSave}>Save Tags</Button>
 		</div>
 	</div>
 </div>
-

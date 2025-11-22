@@ -42,9 +42,7 @@
 	});
 
 	let isValid = $derived(
-		vaultName.trim().length > 0 &&
-		password.length >= 8 &&
-		password === confirmPassword
+		vaultName.trim().length > 0 && password.length >= 8 && password === confirmPassword
 	);
 
 	async function handleCreate() {
@@ -56,21 +54,21 @@
 		try {
 			const vaultId = await createVault(vaultName.trim(), password);
 			const db = openDatabase(vaultId);
-			
+
 			// Get vault metadata
 			const { getVaultMetadata } = await import('$lib/services/vaults');
 			const metadata = await getVaultMetadata(vaultId);
-			
+
 			if (!metadata) {
 				throw new Error('Failed to get vault metadata');
 			}
 
 			// Activate vault in store
 			activateVault(vaultId, metadata.name, metadata.createdAt, db);
-			
+
 			// Set up database hooks
 			setupDatabaseHooks(db);
-			
+
 			// Navigate to vault
 			await goto('/vault');
 		} catch (err) {
@@ -99,21 +97,21 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background p-4">
 	<div class="w-full max-w-xl">
-		<div class="text-center mb-8">
-			<div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-				<DatabaseIcon class="w-8 h-8 text-primary" />
+		<div class="mb-8 text-center">
+			<div
+				class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+			>
+				<DatabaseIcon class="h-8 w-8 text-primary" />
 			</div>
-			<h1 class="text-3xl font-bold mb-2">Create New Vault</h1>
-			<p class="text-muted-foreground">
-				Set up a secure encrypted vault for your notes
-			</p>
+			<h1 class="mb-2 text-3xl font-bold">Create New Vault</h1>
+			<p class="text-muted-foreground">Set up a secure encrypted vault for your notes</p>
 		</div>
 
 		<div class="space-y-6">
 			{#if error}
-				<div class="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
+				<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
 					{error}
 				</div>
 			{/if}
@@ -127,11 +125,9 @@
 					onkeydown={handleKeydown}
 					placeholder="My Personal Notes"
 					disabled={creating}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 				/>
-				<p class="text-xs text-muted-foreground">
-					Display name for your vault (not encrypted)
-				</p>
+				<p class="text-xs text-muted-foreground">Display name for your vault (not encrypted)</p>
 			</div>
 
 			<div class="space-y-2">
@@ -144,24 +140,24 @@
 						onkeydown={handleKeydown}
 						placeholder="Enter a strong password"
 						disabled={creating}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 					/>
 					<button
 						type="button"
 						onclick={togglePasswordVisibility}
-						class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 						tabindex="-1"
 					>
 						{#if showPassword}
-							<EyeOffIcon class="w-4 h-4" />
+							<EyeOffIcon class="h-4 w-4" />
 						{:else}
-							<EyeIcon class="w-4 h-4" />
+							<EyeIcon class="h-4 w-4" />
 						{/if}
 					</button>
 				</div>
 				{#if password}
 					<div class="flex items-center gap-2 text-sm">
-						<div class="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+						<div class="h-2 flex-1 overflow-hidden rounded-full bg-muted">
 							<div
 								class="h-full bg-primary transition-all duration-300"
 								style="width: {(passwordStrength.score / 5) * 100}%"
@@ -182,72 +178,69 @@
 						onkeydown={handleKeydown}
 						placeholder="Re-enter your password"
 						disabled={creating}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 					/>
 					<button
 						type="button"
 						onclick={toggleConfirmPasswordVisibility}
-						class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 						tabindex="-1"
 					>
 						{#if showConfirmPassword}
-							<EyeOffIcon class="w-4 h-4" />
+							<EyeOffIcon class="h-4 w-4" />
 						{:else}
-							<EyeIcon class="w-4 h-4" />
+							<EyeIcon class="h-4 w-4" />
 						{/if}
 					</button>
 				</div>
 				{#if confirmPassword && password !== confirmPassword}
-					<p class="text-sm text-destructive flex items-center gap-1">
-						<XIcon class="w-3 h-3" />
+					<p class="flex items-center gap-1 text-sm text-destructive">
+						<XIcon class="h-3 w-3" />
 						Passwords do not match
 					</p>
 				{:else if confirmPassword && password === confirmPassword}
-					<p class="text-sm text-green-500 flex items-center gap-1">
-						<CheckIcon class="w-3 h-3" />
+					<p class="flex items-center gap-1 text-sm text-green-500">
+						<CheckIcon class="h-3 w-3" />
 						Passwords match
 					</p>
 				{/if}
 			</div>
 
-			<div class="bg-muted/50 rounded-lg p-4 text-sm">
-				<p class="font-medium mb-2">Password requirements:</p>
+			<div class="rounded-lg bg-muted/50 p-4 text-sm">
+				<p class="mb-2 font-medium">Password requirements:</p>
 				<ul class="space-y-1.5">
-					<li class="flex items-center gap-2 {password.length >= 8 ? 'text-green-500' : 'text-muted-foreground'}">
+					<li
+						class="flex items-center gap-2 {password.length >= 8
+							? 'text-green-500'
+							: 'text-muted-foreground'}"
+					>
 						{#if password.length >= 8}
-							<CheckIcon class="w-4 h-4" />
+							<CheckIcon class="h-4 w-4" />
 						{:else}
-							<span class="w-4 h-4 flex items-center justify-center text-xs">•</span>
+							<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
 						{/if}
 						At least 8 characters
 					</li>
 					<li class="flex items-center gap-2 text-muted-foreground">
-						<span class="w-4 h-4 flex items-center justify-center text-xs">•</span>
+						<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
 						Mix of uppercase and lowercase letters
 					</li>
 					<li class="flex items-center gap-2 text-muted-foreground">
-						<span class="w-4 h-4 flex items-center justify-center text-xs">•</span>
+						<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
 						Include numbers and special characters
 					</li>
 				</ul>
 			</div>
 
 			<div class="flex gap-3 pt-2">
-				<Button
-					onclick={handleCancel}
-					variant="outline"
-					class="flex-1"
-					disabled={creating}
-				>
+				<Button onclick={handleCancel} variant="outline" class="flex-1" disabled={creating}>
 					Cancel
 				</Button>
-				<Button
-					onclick={handleCreate}
-					class="flex-1"
-					disabled={!isValid || creating}
-				>
+				<Button onclick={handleCreate} class="flex-1" disabled={!isValid || creating}>
 					{#if creating}
-						<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></span>
+						<span
+							class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+						></span>
 						Creating...
 					{:else}
 						Create Vault
@@ -257,4 +250,3 @@
 		</div>
 	</div>
 </div>
-

@@ -36,45 +36,49 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background p-4">
 	<div class="w-full max-w-2xl">
-		<div class="text-center mb-8">
-			<h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Gull Notes</h1>
-			<h2 class="text-3xl font-semibold mb-2">Select a Vault</h2>
-			<p class="text-muted-foreground">
-				Choose a vault to unlock, or create a new one
-			</p>
+		<div class="mb-8 text-center">
+			<h1
+				class="mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-5xl font-bold text-transparent"
+			>
+				Gull Notes
+			</h1>
+			<h2 class="mb-2 text-3xl font-semibold">Select a Vault</h2>
+			<p class="text-muted-foreground">Choose a vault to unlock, or create a new one</p>
 		</div>
 
 		{#if loading}
-			<div class="text-center py-12">
-				<div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+			<div class="py-12 text-center">
+				<div
+					class="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary"
+				></div>
 				<p class="mt-4 text-muted-foreground">Loading vaults...</p>
 			</div>
 		{:else if error}
-			<div class="bg-destructive/10 text-destructive rounded-lg p-4 mb-6">
+			<div class="mb-6 rounded-lg bg-destructive/10 p-4 text-destructive">
 				<p>{error}</p>
 			</div>
 		{:else if vaults.length === 0}
-			<div class="text-center py-12 bg-muted/50 rounded-lg mb-6">
-				<DatabaseIcon class="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-				<h2 class="text-xl font-semibold mb-2">No Vaults Found</h2>
-				<p class="text-muted-foreground mb-6">
-					Get started by creating your first encrypted vault
-				</p>
+			<div class="mb-6 rounded-lg bg-muted/50 py-12 text-center">
+				<DatabaseIcon class="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+				<h2 class="mb-2 text-xl font-semibold">No Vaults Found</h2>
+				<p class="mb-6 text-muted-foreground">Get started by creating your first encrypted vault</p>
 			</div>
 		{:else}
-			<div class="space-y-3 mb-6 max-h-96 overflow-y-auto">
+			<div class="mb-6 max-h-96 space-y-3 overflow-y-auto">
 				{#each vaults as vault}
 					<button
 						onclick={() => onSelectVault(vault.id)}
-						class="w-full p-4 bg-card hover:bg-accent rounded-lg border border-border transition-colors text-left flex items-center gap-4 group"
+						class="group flex w-full items-center gap-4 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-accent"
 					>
-						<div class="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-							<DatabaseIcon class="w-6 h-6 text-primary" />
+						<div
+							class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+						>
+							<DatabaseIcon class="h-6 w-6 text-primary" />
 						</div>
-						<div class="flex-1 min-w-0">
-							<h3 class="font-semibold text-lg truncate">{vault.name}</h3>
+						<div class="min-w-0 flex-1">
+							<h3 class="truncate text-lg font-semibold">{vault.name}</h3>
 							<p class="text-sm text-muted-foreground">
 								Created {formatDate(vault.createdAt)}
 							</p>
@@ -90,9 +94,8 @@
 		{/if}
 
 		<Button onclick={onCreateVault} class="w-full" size="lg">
-			<PlusIcon class="w-5 h-5 mr-2" />
+			<PlusIcon class="mr-2 h-5 w-5" />
 			Create New Vault
 		</Button>
 	</div>
 </div>
-

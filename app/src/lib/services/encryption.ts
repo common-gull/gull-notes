@@ -97,11 +97,7 @@ export async function encryptData(
 	const encoded = new TextEncoder().encode(JSON.stringify(data));
 	const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for GCM
 
-	const ciphertext = await crypto.subtle.encrypt(
-		{ name: 'AES-GCM', iv: iv },
-		key,
-		encoded
-	);
+	const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, encoded);
 
 	return { ciphertext, iv };
 }
@@ -204,4 +200,3 @@ export async function retrieveEncryptedDataKey(
 	const record = await db.settings.get('encrypted_data_key');
 	return record?.data || null;
 }
-

@@ -51,33 +51,32 @@
 
 {#if $notesLoading}
 	<!-- Loading state -->
-	<div class="flex flex-col items-center justify-center h-full text-center p-8">
-		<div class="rounded-full bg-muted p-6 mb-6 animate-pulse">
-			<Loader2 class="h-12 w-12 text-muted-foreground animate-spin" />
+	<div class="flex h-full flex-col items-center justify-center p-8 text-center">
+		<div class="mb-6 animate-pulse rounded-full bg-muted p-6">
+			<Loader2 class="h-12 w-12 animate-spin text-muted-foreground" />
 		</div>
 
-		<h2 class="text-2xl font-semibold mb-2">Loading notes...</h2>
-		<p class="text-muted-foreground mb-6 max-w-sm">
+		<h2 class="mb-2 text-2xl font-semibold">Loading notes...</h2>
+		<p class="mb-6 max-w-sm text-muted-foreground">
 			Decrypting your notes securely. This may take a moment.
 		</p>
 	</div>
 {:else}
 	<!-- Empty state -->
-	<div class="flex flex-col items-center justify-center h-full text-center p-8">
-		<div class="rounded-full bg-muted p-6 mb-6">
+	<div class="flex h-full flex-col items-center justify-center p-8 text-center">
+		<div class="mb-6 rounded-full bg-muted p-6">
 			<FileText class="h-12 w-12 text-muted-foreground" />
 		</div>
 
-		<h2 class="text-2xl font-semibold mb-2">No notes yet</h2>
-		<p class="text-muted-foreground mb-6 max-w-sm">
+		<h2 class="mb-2 text-2xl font-semibold">No notes yet</h2>
+		<p class="mb-6 max-w-sm text-muted-foreground">
 			Start your secure note-taking journey by creating your first note. Your data is encrypted and
 			stored locally.
 		</p>
 
 		<Button size="lg" onclick={createFirstNote}>
-			<Plus class="h-5 w-5 mr-2" />
+			<Plus class="mr-2 h-5 w-5" />
 			Create Your First Note
 		</Button>
 	</div>
 {/if}
-

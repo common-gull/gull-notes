@@ -60,13 +60,15 @@
 	}
 </script>
 
-<div class="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background p-4">
 	<div class="w-full max-w-md">
-		<div class="text-center mb-8">
-			<div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-				<LockKeyholeIcon class="w-8 h-8 text-primary" />
+		<div class="mb-8 text-center">
+			<div
+				class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+			>
+				<LockKeyholeIcon class="h-8 w-8 text-primary" />
 			</div>
-			<h1 class="text-3xl font-bold mb-2">Unlock Vault</h1>
+			<h1 class="mb-2 text-3xl font-bold">Unlock Vault</h1>
 			<p class="text-muted-foreground">
 				Enter your password to access <strong>{vaultName}</strong>
 			</p>
@@ -74,7 +76,7 @@
 
 		<div class="space-y-4">
 			{#if error}
-				<div class="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
+				<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
 					{error}
 				</div>
 			{/if}
@@ -90,39 +92,32 @@
 						onkeydown={handleKeydown}
 						placeholder="Enter your password"
 						disabled={unlocking}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 					/>
 					<button
 						type="button"
 						onclick={togglePasswordVisibility}
-						class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 						tabindex="-1"
 					>
 						{#if showPassword}
-							<EyeOffIcon class="w-4 h-4" />
+							<EyeOffIcon class="h-4 w-4" />
 						{:else}
-							<EyeIcon class="w-4 h-4" />
+							<EyeIcon class="h-4 w-4" />
 						{/if}
 					</button>
 				</div>
 			</div>
 
 			<div class="flex gap-3">
-				<Button
-					onclick={onCancel}
-					variant="outline"
-					class="flex-1"
-					disabled={unlocking}
-				>
+				<Button onclick={onCancel} variant="outline" class="flex-1" disabled={unlocking}>
 					Cancel
 				</Button>
-				<Button
-					onclick={handleUnlock}
-					class="flex-1"
-					disabled={unlocking || !password}
-				>
+				<Button onclick={handleUnlock} class="flex-1" disabled={unlocking || !password}>
 					{#if unlocking}
-						<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></span>
+						<span
+							class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+						></span>
 						Unlocking...
 					{:else}
 						Unlock
@@ -132,4 +127,3 @@
 		</div>
 	</div>
 </div>
-

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { Button } from './ui/button';
-	import { TagIcon } from 'lucide-svelte';
+	import { TagIcon, MoreVerticalIcon, Trash2Icon } from 'lucide-svelte';
+	import * as DropdownMenu from './ui/dropdown-menu';
 	import TagEditorDialog from './TagEditorDialog.svelte';
-	import { updateNoteMetadata } from '$lib/stores/notes';
+	import DeleteNoteDialog from './DeleteNoteDialog.svelte';
+	import { updateNoteMetadata, deleteNote, selectedNoteId } from '$lib/stores/notes';
 	import type { DecryptedMetadata } from '$lib/types';
 
 	interface Props {
@@ -14,6 +16,7 @@
 
 	let isEditingTitle = $state(false);
 	let showTagDialog = $state(false);
+	let showDeleteDialog = $state(false);
 	let titleInputElement = $state<HTMLInputElement>();
 	let isSaving = $state(false);
 	let editingTitleValue = $state('');
@@ -31,7 +34,7 @@
 	async function saveTitle() {
 		// Prevent multiple simultaneous saves
 		if (isSaving) return;
-		
+
 		const trimmedTitle = editingTitleValue.trim();
 		const finalTitle = trimmedTitle || 'Untitled Note';
 
@@ -46,7 +49,7 @@
 				isSaving = false;
 			}
 		}
-		
+
 		isEditingTitle = false;
 	}
 
@@ -70,26 +73,42 @@
 			console.error('Failed to update tags:', error);
 		}
 	}
+
+	async function handleDeleteNote() {
+		try {
+			const nextNoteId = await deleteNote(noteId);
+			showDeleteDialog = false;
+
+			// Select the next note or clear selection
+			if (nextNoteId) {
+				selectedNoteId.set(nextNoteId);
+			} else {
+				selectedNoteId.set(null);
+			}
+		} catch (error) {
+			console.error('Failed to delete note:', error);
+		}
+	}
 </script>
 
 <div class="border-b border-border bg-background px-6 py-3">
 	<div class="flex items-center justify-between gap-4">
 		<!-- Title section -->
-		<div class="flex-1 min-w-0">
+		<div class="min-w-0 flex-1">
 			{#if isEditingTitle}
 				<input
 					bind:this={titleInputElement}
 					bind:value={editingTitleValue}
 					onkeydown={handleTitleKeydown}
 					onblur={handleTitleBlur}
-					class="w-full bg-transparent border-none outline-none text-xl font-semibold px-0 py-1 focus:ring-0"
+					class="w-full border-none bg-transparent px-0 py-1 text-xl font-semibold outline-none focus:ring-0"
 					placeholder="Untitled Note"
 					disabled={isSaving}
 				/>
 			{:else}
 				<button
 					onclick={startEditingTitle}
-					class="w-full text-left text-xl font-semibold truncate hover:text-primary transition-colors py-1"
+					class="w-full truncate py-1 text-left text-xl font-semibold transition-colors hover:text-primary"
 					type="button"
 				>
 					{metadata.title || 'Untitled Note'}
@@ -97,12 +116,12 @@
 			{/if}
 		</div>
 
-		<!-- Tags section -->
+		<!-- Tags and Actions section -->
 		<div class="flex items-center gap-2">
 			{#if metadata.tags && metadata.tags.length > 0}
-				<div class="flex gap-1 items-center">
+				<div class="flex items-center gap-1">
 					{#each metadata.tags.slice(0, 3) as tag}
-						<span class="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
+						<span class="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground">
 							{tag}
 						</span>
 					{/each}
@@ -113,15 +132,30 @@
 					{/if}
 				</div>
 			{/if}
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={() => showTagDialog = true}
-				class="gap-1"
-			>
-				<TagIcon class="w-4 h-4" />
+			<Button variant="outline" size="sm" onclick={() => (showTagDialog = true)} class="gap-1">
+				<TagIcon class="h-4 w-4" />
 				<span class="hidden sm:inline">Tags</span>
 			</Button>
+
+			<!-- Action menu -->
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger>
+					{#snippet child({ props })}
+						<Button variant="ghost" size="icon-sm" class="h-8 w-8" {...props}>
+							<MoreVerticalIcon class="h-4 w-4" />
+						</Button>
+					{/snippet}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end">
+					<DropdownMenu.Item
+						onclick={() => (showDeleteDialog = true)}
+						class="text-destructive focus:text-destructive"
+					>
+						<Trash2Icon class="mr-2 h-4 w-4" />
+						Delete Note
+					</DropdownMenu.Item>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		</div>
 	</div>
 </div>
@@ -130,7 +164,14 @@
 	<TagEditorDialog
 		tags={metadata.tags}
 		onSave={handleSaveTags}
-		onClose={() => showTagDialog = false}
+		onClose={() => (showTagDialog = false)}
 	/>
 {/if}
 
+{#if showDeleteDialog}
+	<DeleteNoteDialog
+		noteTitle={metadata.title}
+		onConfirm={handleDeleteNote}
+		onCancel={() => (showDeleteDialog = false)}
+	/>
+{/if}

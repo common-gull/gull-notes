@@ -86,7 +86,12 @@ export function lockVault(): void {
 /**
  * Create and activate a new vault
  */
-export function activateVault(vaultId: string, vaultName: string, createdAt: number, db: NotesDatabase): void {
+export function activateVault(
+	vaultId: string,
+	vaultName: string,
+	createdAt: number,
+	db: NotesDatabase
+): void {
 	const vaultInfo: VaultInfo = {
 		id: vaultId,
 		name: vaultName,
@@ -102,7 +107,9 @@ export function activateVault(vaultId: string, vaultName: string, createdAt: num
 }
 
 // Export individual stores
-export const selectedVaultForUnlock = derived(vaultState, ($state) => $state.selectedVaultForUnlock);
+export const selectedVaultForUnlock = derived(
+	vaultState,
+	($state) => $state.selectedVaultForUnlock
+);
 export const activeVault = derived(vaultState, ($state) => $state.activeVault);
 export const activeDatabase = derived(vaultState, ($state) => $state.activeDatabase);
-

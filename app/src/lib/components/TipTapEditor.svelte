@@ -5,7 +5,12 @@
 	import EditorToolbar from './EditorToolbar.svelte';
 	import EditorSkeleton from './EditorSkeleton.svelte';
 	import NoteHeader from './NoteHeader.svelte';
-	import { selectedNoteId, loadNoteContent, getActiveDatabase, notesWithMetadata } from '$lib/stores/notes';
+	import {
+		selectedNoteId,
+		loadNoteContent,
+		getActiveDatabase,
+		notesWithMetadata
+	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 	import Image from '@tiptap/extension-image';
@@ -23,7 +28,7 @@
 	// Watch for metadata changes from the store
 	$effect(() => {
 		if (currentNoteId) {
-			const note = $notesWithMetadata.find(n => n.id === currentNoteId);
+			const note = $notesWithMetadata.find((n) => n.id === currentNoteId);
 			if (note) {
 				currentMetadata = note.metadata;
 			}
@@ -38,7 +43,7 @@
 		const data = encoder.encode(content);
 		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
 		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+		return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 	}
 
 	// Helper function to convert File/Blob to base64 data URL
@@ -57,11 +62,12 @@
 			const base64 = await fileToBase64(file);
 			const { schema } = view.state;
 			const node = schema.nodes.image.create({ src: base64 });
-			
-			const transaction = pos !== undefined
-				? view.state.tr.insert(pos, node)
-				: view.state.tr.replaceSelectionWith(node);
-			
+
+			const transaction =
+				pos !== undefined
+					? view.state.tr.insert(pos, node)
+					: view.state.tr.replaceSelectionWith(node);
+
 			view.dispatch(transaction);
 		} catch (error) {
 			console.error('Failed to process image:', error);
@@ -76,12 +82,12 @@
 				clearTimeout(saveTimeout);
 				saveTimeout = null;
 			}
-			
+
 			// Cancel previous load if still in progress
 			if (loadingPromise) {
 				loadingNote = false;
 			}
-			
+
 			// Save current note before switching (if there is one)
 			// Always load new note regardless of save success/failure
 			if (currentNoteId) {
@@ -105,7 +111,7 @@
 			const note = await loadNoteContent(noteId);
 			// Check if this is still the current request (user didn't switch notes)
 			if ($selectedNoteId !== noteId) return;
-			
+
 			if (note) {
 				editorState.editor.commands.setContent(note.content.body);
 				currentNoteId = noteId;
@@ -145,7 +151,7 @@
 		}
 
 		const content = editorState.editor.getHTML();
-		
+
 		// Compare hash to check if content actually changed
 		const currentHash = await hashContent(content);
 		if (currentHash === lastContentHash) {
@@ -191,7 +197,7 @@
 				console.error('Failed to save note:', error);
 				// TODO: Show user notification about failed save
 			});
-		}, 500); 
+		}, 500);
 	}
 
 	onMount(() => {
@@ -206,9 +212,9 @@
 					allowBase64: true
 				}),
 				Emoji.configure({
-                    emojis: gitHubEmojis,
-                    enableEmoticons: true,
-                }),
+					emojis: gitHubEmojis,
+					enableEmoticons: true
+				})
 			],
 			content: '<p>Select or create a note to start editing</p>',
 			onTransaction: () => {
@@ -253,14 +259,14 @@
 								left: event.clientX,
 								top: event.clientY
 							});
-							
+
 							// Only handle the event if we have valid coordinates
 							if (coordinates) {
 								event.preventDefault();
 								insertImage(view, file, coordinates.pos);
 								return true;
 							}
-							
+
 							// If coordinates are invalid, let default behavior handle it
 							return false;
 						}
@@ -278,7 +284,7 @@
 		if (saveTimeout) {
 			clearTimeout(saveTimeout);
 		}
-		
+
 		// Save immediately if there's a current note
 		// Note: This is synchronous destruction, but saveNote is async
 		// We can't await here, but the IndexedDB operation will still complete
@@ -287,7 +293,7 @@
 				console.error('Failed to save note on destroy:', error);
 			});
 		}
-		
+
 		editorState.editor?.destroy();
 	});
 </script>
@@ -299,13 +305,13 @@
 		</div>
 	{/if}
 
-	<div class="flex flex-col h-full" class:opacity-0={loadingNote}>
+	<div class="flex h-full flex-col" class:opacity-0={loadingNote}>
 		{#if currentNoteId && currentMetadata}
 			<NoteHeader noteId={currentNoteId} metadata={currentMetadata} />
 		{/if}
 		<EditorToolbar editor={editorState.editor} />
-		<div 
-			class="flex-1 overflow-auto editor-container" 
+		<div
+			class="editor-container flex-1 overflow-auto"
 			role="textbox"
 			tabindex="-1"
 			onclick={(e) => {
@@ -313,9 +319,11 @@
 				if (editorState.editor && !editorState.editor.isFocused) {
 					// Check if click is on the container or prose wrapper, not on actual content
 					const target = e.target as HTMLElement;
-					if (target.classList.contains('editor-container') || 
-					    target.classList.contains('prose') ||
-					    target.classList.contains('ProseMirror')) {
+					if (
+						target.classList.contains('editor-container') ||
+						target.classList.contains('prose') ||
+						target.classList.contains('ProseMirror')
+					) {
 						editorState.editor.commands.focus('end');
 					}
 				}
@@ -332,7 +340,7 @@
 				}
 			}}
 		>
-			<div bind:this={element} class="prose prose-sm max-w-none p-6 min-h-full"></div>
+			<div bind:this={element} class="prose prose-sm min-h-full max-w-none p-6"></div>
 		</div>
 	</div>
 </div>
@@ -343,12 +351,12 @@
 		min-height: 100%;
 		cursor: text;
 	}
-	
+
 	/* Ensure the prose container is clickable and fills space */
 	.prose {
 		cursor: text;
 	}
-	
+
 	/* Make all clickable areas focus the editor */
 	.prose:empty::before {
 		content: '';
@@ -406,4 +414,3 @@
 		margin-bottom: 0;
 	}
 </style>
-

@@ -24,7 +24,7 @@
 	}
 </script>
 
-<header class="border-b bg-background px-4 py-3 flex items-center gap-4">
+<header class="flex items-center gap-4 border-b bg-background px-4 py-3">
 	{#if showMenuButton}
 		<Button variant="ghost" size="icon" onclick={onMenuClick}>
 			<Menu class="h-5 w-5" />
@@ -38,15 +38,12 @@
 		{/if}
 	</div>
 
-	<div class="flex-1 max-w-md mx-auto">
+	<div class="mx-auto max-w-md flex-1">
 		<div class="relative">
-			<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-			<Input
-				type="search"
-				placeholder="Search notes..."
-				class="pl-9"
-				bind:value={$searchQuery}
+			<Search
+				class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
 			/>
+			<Input type="search" placeholder="Search notes..." class="pl-9" bind:value={$searchQuery} />
 		</div>
 	</div>
 
@@ -59,4 +56,3 @@
 		</Button>
 	</div>
 </header>
-

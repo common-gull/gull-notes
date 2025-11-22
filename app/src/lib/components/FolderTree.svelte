@@ -16,7 +16,7 @@
 	{#each folders as folder (folder.id)}
 		<div class="folder-item">
 			<button
-				class="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent transition-colors text-sm"
+				class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent"
 				onclick={() => toggleFolder(folder.id)}
 				type="button"
 			>
@@ -30,7 +30,7 @@
 					<span class="w-4"></span>
 				{/if}
 				<FolderIcon class="h-4 w-4 text-muted-foreground" />
-				<span class="flex-1 text-left truncate">{folder.name}</span>
+				<span class="flex-1 truncate text-left">{folder.name}</span>
 			</button>
 
 			{#if folder.children && folder.children.length > 0 && $expandedFolders.has(folder.id)}
@@ -51,4 +51,3 @@
 		flex-direction: column;
 	}
 </style>
-

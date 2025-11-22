@@ -6,11 +6,11 @@
 	import { changeVaultPassword, deleteVault } from '$lib/services/vaults';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import { 
-		ArrowLeftIcon, 
-		CheckIcon, 
-		EyeIcon, 
-		EyeOffIcon, 
+	import {
+		ArrowLeftIcon,
+		CheckIcon,
+		EyeIcon,
+		EyeOffIcon,
 		XIcon,
 		InfoIcon,
 		ShieldIcon,
@@ -57,14 +57,12 @@
 
 	let isPasswordFormValid = $derived(
 		currentPassword.length > 0 &&
-		newPassword.length >= 8 &&
-		newPassword === confirmPassword &&
-		!changing
+			newPassword.length >= 8 &&
+			newPassword === confirmPassword &&
+			!changing
 	);
 
-	let isDeleteConfirmValid = $derived(
-		deleteConfirmText === $activeVault?.name && !deleting
-	);
+	let isDeleteConfirmValid = $derived(deleteConfirmText === $activeVault?.name && !deleting);
 
 	function formatDate(timestamp: number): string {
 		return new Date(timestamp).toLocaleDateString(undefined, {
@@ -93,7 +91,7 @@
 
 		try {
 			stage = 'Verifying current password...';
-			await new Promise(resolve => setTimeout(resolve, 100)); // Allow UI to update
+			await new Promise((resolve) => setTimeout(resolve, 100)); // Allow UI to update
 
 			const newVaultId = await changeVaultPassword(
 				$activeVault.id,
@@ -125,7 +123,7 @@
 		} catch (err) {
 			console.error('Failed to change password:', err);
 			const errorMessage = err instanceof Error ? err.message : 'Failed to change password';
-			
+
 			// Provide clear guidance based on error type
 			if (errorMessage.includes('Note count mismatch') || errorMessage.includes('Missing')) {
 				error = `Data verification failed: ${errorMessage}\n\nYour original vault has been preserved and no changes were made.`;
@@ -136,7 +134,7 @@
 			} else {
 				error = `${errorMessage}\n\nYour original vault has been preserved and no changes were made.`;
 			}
-			
+
 			changing = false;
 		}
 	}
@@ -149,7 +147,7 @@
 
 		try {
 			await deleteVault($activeVault.id);
-			
+
 			// Lock vault and redirect to home
 			lockVault();
 			await goto('/');
@@ -195,9 +193,9 @@
 	});
 </script>
 
-<div class="h-full flex flex-col bg-background">
+<div class="flex h-full flex-col bg-background">
 	<!-- Header -->
-	<header class="border-b bg-background px-4 py-3 flex items-center gap-4">
+	<header class="flex items-center gap-4 border-b bg-background px-4 py-3">
 		<Button variant="ghost" size="icon" onclick={() => goto('/vault')}>
 			<ArrowLeftIcon class="h-5 w-5" />
 		</Button>
@@ -206,28 +204,28 @@
 
 	<!-- Content -->
 	<div class="flex-1 overflow-auto">
-		<div class="max-w-3xl mx-auto p-6 space-y-8">
+		<div class="mx-auto max-w-3xl space-y-8 p-6">
 			{#if $activeVault}
 				<!-- Vault Information Section -->
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
-						<InfoIcon class="w-5 h-5 text-primary" />
+						<InfoIcon class="h-5 w-5 text-primary" />
 						<h2 class="text-2xl font-bold">Vault Information</h2>
 					</div>
-					
-					<div class="bg-muted/50 rounded-lg p-6 space-y-3">
-						<div class="flex justify-between items-start">
+
+					<div class="space-y-3 rounded-lg bg-muted/50 p-6">
+						<div class="flex items-start justify-between">
 							<div>
 								<p class="text-sm text-muted-foreground">Vault Name</p>
 								<p class="text-lg font-semibold">{$activeVault.name}</p>
 							</div>
 						</div>
-						
+
 						<div class="border-t border-border pt-3">
 							<p class="text-sm text-muted-foreground">Created</p>
 							<p class="font-medium">{formatDate($activeVault.createdAt)}</p>
 						</div>
-						
+
 						<div class="border-t border-border pt-3">
 							<p class="text-sm text-muted-foreground">Notes</p>
 							<p class="font-medium">{noteCount} {noteCount === 1 ? 'note' : 'notes'}</p>
@@ -238,28 +236,26 @@
 				<!-- Security Section -->
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
-						<ShieldIcon class="w-5 h-5 text-primary" />
+						<ShieldIcon class="h-5 w-5 text-primary" />
 						<h2 class="text-2xl font-bold">Security</h2>
 					</div>
 
 					{#if !showPasswordForm}
-						<div class="bg-muted/50 rounded-lg p-6">
+						<div class="rounded-lg bg-muted/50 p-6">
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<h3 class="font-semibold text-lg mb-1">Change Password</h3>
+									<h3 class="mb-1 text-lg font-semibold">Change Password</h3>
 									<p class="text-sm text-muted-foreground">
 										Update your vault password. All notes will be re-encrypted.
 									</p>
 								</div>
-								<Button onclick={() => showPasswordForm = true}>
-									Change Password
-								</Button>
+								<Button onclick={() => (showPasswordForm = true)}>Change Password</Button>
 							</div>
 						</div>
 					{:else}
-						<div class="bg-card border border-border rounded-lg p-6 space-y-4">
+						<div class="space-y-4 rounded-lg border border-border bg-card p-6">
 							<div class="flex items-center justify-between">
-								<h3 class="font-semibold text-lg">Change Password</h3>
+								<h3 class="text-lg font-semibold">Change Password</h3>
 								{#if !changing && !success}
 									<button
 										onclick={() => {
@@ -269,51 +265,57 @@
 											confirmPassword = '';
 											error = null;
 										}}
-										class="text-muted-foreground hover:text-foreground transition-colors"
+										class="text-muted-foreground transition-colors hover:text-foreground"
 									>
-										<XIcon class="w-5 h-5" />
+										<XIcon class="h-5 w-5" />
 									</button>
 								{/if}
 							</div>
 
 							{#if error}
-								<div class="bg-destructive/10 text-destructive rounded-lg p-4 text-sm space-y-2">
+								<div class="space-y-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
 									<p class="font-semibold">Error</p>
 									<p class="whitespace-pre-line">{error}</p>
 								</div>
 							{/if}
 
 							{#if success}
-								<div class="bg-green-500/10 text-green-500 rounded-lg p-4 text-center">
-									<CheckIcon class="w-8 h-8 mx-auto mb-2" />
-									<p class="font-semibold mb-1">{stage}</p>
+								<div class="rounded-lg bg-green-500/10 p-4 text-center text-green-500">
+									<CheckIcon class="mx-auto mb-2 h-8 w-8" />
+									<p class="mb-1 font-semibold">{stage}</p>
 									<p class="text-sm">Redirecting in {countdown}...</p>
 								</div>
 							{:else if changing}
 								<div class="space-y-3">
 									<div class="text-center">
-										<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+										<div
+											class="mb-2 inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
+										></div>
 										<p class="text-sm font-medium">{stage}</p>
 										{#if progress.total > 0}
-											<p class="text-xs text-muted-foreground mt-1">
-												{progress.current} / {progress.total} notes ({Math.round((progress.current / progress.total) * 100)}%)
+											<p class="mt-1 text-xs text-muted-foreground">
+												{progress.current} / {progress.total} notes ({Math.round(
+													(progress.current / progress.total) * 100
+												)}%)
 											</p>
-											<div class="w-full bg-muted rounded-full h-2 mt-2">
+											<div class="mt-2 h-2 w-full rounded-full bg-muted">
 												<div
-													class="bg-primary h-2 rounded-full transition-all duration-300"
+													class="h-2 rounded-full bg-primary transition-all duration-300"
 													style="width: {(progress.current / progress.total) * 100}%"
 												></div>
 											</div>
 										{/if}
 									</div>
-									<p class="text-xs text-muted-foreground text-center">
+									<p class="text-center text-xs text-muted-foreground">
 										Please do not close this window...
 									</p>
 								</div>
 							{:else}
 								<div class="space-y-4">
 									<div class="space-y-2">
-										<label for="current-password" class="text-sm font-medium">Current Password</label>
+										<label for="current-password" class="text-sm font-medium"
+											>Current Password</label
+										>
 										<div class="relative">
 											<input
 												id="current-password"
@@ -322,18 +324,18 @@
 												onkeydown={handleKeydown}
 												placeholder="Enter current password"
 												disabled={changing}
-												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
 											<button
 												type="button"
-												onclick={() => showCurrentPassword = !showCurrentPassword}
-												class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+												onclick={() => (showCurrentPassword = !showCurrentPassword)}
+												class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 												tabindex="-1"
 											>
 												{#if showCurrentPassword}
-													<EyeOffIcon class="w-4 h-4" />
+													<EyeOffIcon class="h-4 w-4" />
 												{:else}
-													<EyeIcon class="w-4 h-4" />
+													<EyeIcon class="h-4 w-4" />
 												{/if}
 											</button>
 										</div>
@@ -349,24 +351,24 @@
 												onkeydown={handleKeydown}
 												placeholder="Enter new password"
 												disabled={changing}
-												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
 											<button
 												type="button"
-												onclick={() => showNewPassword = !showNewPassword}
-												class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+												onclick={() => (showNewPassword = !showNewPassword)}
+												class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 												tabindex="-1"
 											>
 												{#if showNewPassword}
-													<EyeOffIcon class="w-4 h-4" />
+													<EyeOffIcon class="h-4 w-4" />
 												{:else}
-													<EyeIcon class="w-4 h-4" />
+													<EyeIcon class="h-4 w-4" />
 												{/if}
 											</button>
 										</div>
 										{#if newPassword}
 											<div class="flex items-center gap-2 text-sm">
-												<div class="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+												<div class="h-2 flex-1 overflow-hidden rounded-full bg-muted">
 													<div
 														class="h-full bg-primary transition-all duration-300"
 														style="width: {(passwordStrength.score / 5) * 100}%"
@@ -378,7 +380,9 @@
 									</div>
 
 									<div class="space-y-2">
-										<label for="confirm-password" class="text-sm font-medium">Confirm New Password</label>
+										<label for="confirm-password" class="text-sm font-medium"
+											>Confirm New Password</label
+										>
 										<div class="relative">
 											<input
 												id="confirm-password"
@@ -387,37 +391,39 @@
 												onkeydown={handleKeydown}
 												placeholder="Re-enter new password"
 												disabled={changing}
-												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-10"
+												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
 											<button
 												type="button"
-												onclick={() => showConfirmPassword = !showConfirmPassword}
-												class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+												onclick={() => (showConfirmPassword = !showConfirmPassword)}
+												class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
 												tabindex="-1"
 											>
 												{#if showConfirmPassword}
-													<EyeOffIcon class="w-4 h-4" />
+													<EyeOffIcon class="h-4 w-4" />
 												{:else}
-													<EyeIcon class="w-4 h-4" />
+													<EyeIcon class="h-4 w-4" />
 												{/if}
 											</button>
 										</div>
 										{#if confirmPassword && newPassword !== confirmPassword}
-											<p class="text-sm text-destructive flex items-center gap-1">
-												<XIcon class="w-3 h-3" />
+											<p class="flex items-center gap-1 text-sm text-destructive">
+												<XIcon class="h-3 w-3" />
 												Passwords do not match
 											</p>
 										{:else if confirmPassword && newPassword === confirmPassword}
-											<p class="text-sm text-green-500 flex items-center gap-1">
-												<CheckIcon class="w-3 h-3" />
+											<p class="flex items-center gap-1 text-sm text-green-500">
+												<CheckIcon class="h-3 w-3" />
 												Passwords match
 											</p>
 										{/if}
 									</div>
 
-									<div class="bg-yellow-500/10 text-yellow-700 dark:text-yellow-500 rounded-lg p-3 text-sm">
-										<p class="font-medium mb-1">⚠️ Important:</p>
-										<ul class="list-disc list-inside space-y-0.5 text-xs">
+									<div
+										class="rounded-lg bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-500"
+									>
+										<p class="mb-1 font-medium">⚠️ Important:</p>
+										<ul class="list-inside list-disc space-y-0.5 text-xs">
 											<li>All notes will be re-encrypted with new keys</li>
 											<li>This process cannot be cancelled once started</li>
 											<li>You'll be logged out after completion</li>
@@ -455,32 +461,32 @@
 				<!-- Danger Zone Section -->
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
-						<TrashIcon class="w-5 h-5 text-destructive" />
+						<TrashIcon class="h-5 w-5 text-destructive" />
 						<h2 class="text-2xl font-bold text-destructive">Danger Zone</h2>
 					</div>
 
-					<div class="bg-destructive/10 border border-destructive/20 rounded-lg p-6 space-y-4">
+					<div class="space-y-4 rounded-lg border border-destructive/20 bg-destructive/10 p-6">
 						<div>
-							<h3 class="font-semibold text-lg mb-1">Delete Vault</h3>
+							<h3 class="mb-1 text-lg font-semibold">Delete Vault</h3>
 							<p class="text-sm text-muted-foreground">
 								Permanently delete this vault and all its notes. This action cannot be undone.
 							</p>
 						</div>
 
 						{#if !showDeleteConfirm}
-							<Button
-								onclick={() => showDeleteConfirm = true}
-								variant="destructive"
-							>
-								<TrashIcon class="w-4 h-4 mr-2" />
+							<Button onclick={() => (showDeleteConfirm = true)} variant="destructive">
+								<TrashIcon class="mr-2 h-4 w-4" />
 								Delete Vault
 							</Button>
 						{:else}
 							<div class="space-y-4 pt-2">
-								<div class="bg-destructive/20 rounded-lg p-4 space-y-2">
-									<p class="font-semibold text-sm">⚠️ Warning: This action is permanent!</p>
-									<ul class="list-disc list-inside space-y-1 text-xs">
-										<li>All {noteCount} {noteCount === 1 ? 'note' : 'notes'} will be permanently deleted</li>
+								<div class="space-y-2 rounded-lg bg-destructive/20 p-4">
+									<p class="text-sm font-semibold">⚠️ Warning: This action is permanent!</p>
+									<ul class="list-inside list-disc space-y-1 text-xs">
+										<li>
+											All {noteCount}
+											{noteCount === 1 ? 'note' : 'notes'} will be permanently deleted
+										</li>
 										<li>This vault cannot be recovered after deletion</li>
 										<li>You will be logged out immediately</li>
 									</ul>
@@ -496,12 +502,12 @@
 										bind:value={deleteConfirmText}
 										placeholder="Enter vault name"
 										disabled={deleting}
-										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 									/>
 								</div>
 
 								{#if error}
-									<div class="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
+									<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
 										{error}
 									</div>
 								{/if}
@@ -526,7 +532,9 @@
 										disabled={!isDeleteConfirmValid}
 									>
 										{#if deleting}
-											<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-background mr-2"></span>
+											<span
+												class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+											></span>
 											Deleting...
 										{:else}
 											Delete Permanently
@@ -541,4 +549,3 @@
 		</div>
 	</div>
 </div>
-

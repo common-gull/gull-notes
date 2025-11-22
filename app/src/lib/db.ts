@@ -34,4 +34,3 @@ export function openDatabase(vaultName: string): NotesDatabase {
 // Keep backward compatibility with a default instance for migration
 // This will be replaced by the vault system
 export const db = new NotesDatabase('SecureNotesDB');
-

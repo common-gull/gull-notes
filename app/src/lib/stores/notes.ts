@@ -95,7 +95,9 @@ async function loadAllNotes() {
 	);
 
 	// Filter out failed decryptions and sort by update time
-	const result = notesWithMeta.filter((n) => n !== null).sort((a, b) => b!.updatedAt - a!.updatedAt);
+	const result = notesWithMeta
+		.filter((n) => n !== null)
+		.sort((a, b) => b!.updatedAt - a!.updatedAt);
 	notesWithMetadata.set(result);
 	notesLoading.set(false);
 }
@@ -111,7 +113,7 @@ async function updateSingleNote(noteId: string) {
 		// The hook will be called again soon and we'll clean up then
 		return;
 	}
-	
+
 	// Clear any old optimistic update tracking
 	optimisticallyUpdatedNotes.delete(noteId);
 
@@ -392,10 +394,10 @@ export async function updateNoteMetadata(
 
 	// Get current note from the store (more up-to-date than DB)
 	const currentNotes = get(notesWithMetadata);
-	const currentNoteInStore = currentNotes.find(n => n.id === noteId);
-	
+	const currentNoteInStore = currentNotes.find((n) => n.id === noteId);
+
 	let currentMetadata: DecryptedMetadata;
-	
+
 	if (currentNoteInStore) {
 		// Use metadata from store (already decrypted and up-to-date)
 		currentMetadata = currentNoteInStore.metadata;
@@ -417,9 +419,8 @@ export async function updateNoteMetadata(
 		...currentMetadata,
 		...updates,
 		// Ensure title is never empty
-		title: updates.title !== undefined 
-			? (updates.title.trim() || 'Untitled Note')
-			: currentMetadata.title
+		title:
+			updates.title !== undefined ? updates.title.trim() || 'Untitled Note' : currentMetadata.title
 	};
 
 	// Encrypt updated metadata
@@ -459,3 +460,34 @@ export async function updateNoteMetadata(
 	}, 2000);
 }
 
+/**
+ * Delete a note from the database
+ * Returns the ID of the next note to select, or null if no notes remain
+ */
+export async function deleteNote(noteId: string): Promise<string | null> {
+	if (!activeDb) {
+		throw new Error('No active database');
+	}
+
+	// Get current notes to find the next note to select
+	const currentNotes = get(notesWithMetadata);
+	const currentIndex = currentNotes.findIndex((n) => n.id === noteId);
+
+	let nextNoteId: string | null = null;
+
+	if (currentIndex !== -1 && currentNotes.length > 1) {
+		// If there's a note after this one, select it
+		if (currentIndex < currentNotes.length - 1) {
+			nextNoteId = currentNotes[currentIndex + 1].id;
+		}
+		// Otherwise, select the note before this one
+		else if (currentIndex > 0) {
+			nextNoteId = currentNotes[currentIndex - 1].id;
+		}
+	}
+
+	// Delete from database (the deleting hook will trigger queueLoadAllNotes)
+	await activeDb.notes.delete(noteId);
+
+	return nextNoteId;
+}

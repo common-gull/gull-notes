@@ -30,14 +30,14 @@
 </script>
 
 <button
-	class="w-full text-left px-3 py-2 rounded-md transition-colors hover:bg-accent"
+	class="w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-accent"
 	class:bg-accent={isSelected}
 	class:text-accent-foreground={isSelected}
-	onclick={onclick}
+	{onclick}
 	type="button"
 >
 	<div class="flex flex-col gap-1">
-		<div class="font-medium text-sm truncate">
+		<div class="truncate text-sm font-medium">
 			{note.metadata.title || 'Untitled Note'}
 		</div>
 		<div class="flex items-center justify-between">
@@ -47,7 +47,7 @@
 			{#if note.metadata.tags && note.metadata.tags.length > 0}
 				<div class="flex gap-1">
 					{#each note.metadata.tags.slice(0, 2) as tag}
-						<span class="text-xs bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">
+						<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
 							{tag}
 						</span>
 					{/each}
@@ -59,4 +59,3 @@
 		</div>
 	</div>
 </button>
-

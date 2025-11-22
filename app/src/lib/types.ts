@@ -108,4 +108,3 @@ export interface EncryptedKeyData {
 	keyIv: Uint8Array;
 	salt: Uint8Array;
 }
-

@@ -23,7 +23,7 @@
 </script>
 
 {#if editor}
-	<div class="border-b bg-background px-4 py-2 flex items-center gap-1 flex-wrap">
+	<div class="flex flex-wrap items-center gap-1 border-b bg-background px-4 py-2">
 		<Button
 			variant="ghost"
 			size="sm"
@@ -54,7 +54,7 @@
 			<Code class="h-4 w-4" />
 		</Button>
 
-		<Separator orientation="vertical" class="h-6 mx-1" />
+		<Separator orientation="vertical" class="mx-1 h-6" />
 
 		<Button
 			variant="ghost"
@@ -74,7 +74,7 @@
 			<Heading2 class="h-4 w-4" />
 		</Button>
 
-		<Separator orientation="vertical" class="h-6 mx-1" />
+		<Separator orientation="vertical" class="mx-1 h-6" />
 
 		<Button
 			variant="ghost"
@@ -103,7 +103,7 @@
 			<Quote class="h-4 w-4" />
 		</Button>
 
-		<Separator orientation="vertical" class="h-6 mx-1" />
+		<Separator orientation="vertical" class="mx-1 h-6" />
 
 		<Button
 			variant="ghost"
@@ -124,4 +124,3 @@
 		</Button>
 	</div>
 {/if}
-

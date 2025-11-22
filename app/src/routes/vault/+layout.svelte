@@ -7,7 +7,7 @@
 	import { activeVault } from '$lib/stores/vault';
 
 	let { children } = $props();
-	
+
 	let isMobile = $state(false);
 	let mobileMenuOpen = $state(false);
 
@@ -49,9 +49,9 @@
 </script>
 
 {#if showVaultUI && $activeVault}
-	<div class="h-screen flex flex-col">
-		<TitleBar 
-			onMenuClick={toggleMobileMenu} 
+	<div class="flex h-screen flex-col">
+		<TitleBar
+			onMenuClick={toggleMobileMenu}
 			showMenuButton={isMobile}
 			vaultName={$activeVault.name}
 		/>
@@ -59,7 +59,11 @@
 		<div class="flex flex-1 overflow-hidden">
 			{#if isMobile}
 				<!-- Mobile: Sheet sidebar -->
-				<Sidebar {isMobile} open={mobileMenuOpen} onOpenChange={(open) => (mobileMenuOpen = open)} />
+				<Sidebar
+					{isMobile}
+					open={mobileMenuOpen}
+					onOpenChange={(open) => (mobileMenuOpen = open)}
+				/>
 			{:else}
 				<!-- Desktop: Fixed sidebar -->
 				<Sidebar {isMobile} />
@@ -75,4 +79,3 @@
 	<!-- For public routes (unlock/create), just render children without vault UI -->
 	{@render children()}
 {/if}
-
