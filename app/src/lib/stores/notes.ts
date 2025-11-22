@@ -1,7 +1,7 @@
 import { liveQuery } from 'dexie';
 import type { NotesDatabase } from '../db';
 import type { Note, Folder, DecryptedMetadata, DecryptedContent, FolderTree } from '../types';
-import { decryptData } from '../services/encryption';
+import { decryptData, encryptData } from '../services/encryption';
 import { sessionKeyManager } from '../services/encryption';
 import { writable, derived, get, readable } from 'svelte/store';
 import { activeDatabase as vaultActiveDatabase } from './vault';
@@ -10,6 +10,11 @@ import { activeDatabase as vaultActiveDatabase } from './vault';
  * Active database instance (set by vault system)
  */
 let activeDb: NotesDatabase | null = null;
+
+/**
+ * Track notes that were optimistically updated to prevent hook overwrites
+ */
+const optimisticallyUpdatedNotes = new Map<string, number>(); // noteId -> timestamp
 
 /**
  * Store for all notes with decrypted metadata
@@ -98,6 +103,17 @@ async function loadAllNotes() {
 // Function to update a single note in the list (when note content changes)
 async function updateSingleNote(noteId: string) {
 	if (!activeDb) return;
+
+	// Check if this note was recently optimistically updated
+	const optimisticTimestamp = optimisticallyUpdatedNotes.get(noteId);
+	if (optimisticTimestamp && Date.now() - optimisticTimestamp < 2000) {
+		// Skip this update - we already optimistically updated it recently
+		// The hook will be called again soon and we'll clean up then
+		return;
+	}
+	
+	// Clear any old optimistic update tracking
+	optimisticallyUpdatedNotes.delete(noteId);
 
 	const key = sessionKeyManager.getKey();
 	if (!key) return;
@@ -339,5 +355,107 @@ export async function saveFolderTree(tree: FolderTree): Promise<void> {
  */
 export function getActiveDatabase(): NotesDatabase | null {
 	return activeDb;
+}
+
+/**
+ * Derived store for all existing tags across all notes
+ * Provides unique tags for autocomplete
+ */
+export const allExistingTags = derived(notesWithMetadata, ($notes) => {
+	const tagSet = new Set<string>();
+	$notes.forEach((note) => {
+		note.metadata.tags.forEach((tag: string) => {
+			if (tag.trim()) {
+				tagSet.add(tag.trim());
+			}
+		});
+	});
+	return Array.from(tagSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+});
+
+/**
+ * Update note metadata (title and/or tags)
+ * Re-encrypts and saves to database
+ */
+export async function updateNoteMetadata(
+	noteId: string,
+	updates: Partial<DecryptedMetadata>
+): Promise<void> {
+	if (!activeDb) {
+		throw new Error('No active database');
+	}
+
+	const key = sessionKeyManager.getKey();
+	if (!key) {
+		throw new Error('No session key available');
+	}
+
+	// Get current note from the store (more up-to-date than DB)
+	const currentNotes = get(notesWithMetadata);
+	const currentNoteInStore = currentNotes.find(n => n.id === noteId);
+	
+	let currentMetadata: DecryptedMetadata;
+	
+	if (currentNoteInStore) {
+		// Use metadata from store (already decrypted and up-to-date)
+		currentMetadata = currentNoteInStore.metadata;
+	} else {
+		// Fallback: get from database
+		const existingNote = await activeDb.notes.get(noteId);
+		if (!existingNote) {
+			throw new Error('Note not found');
+		}
+		currentMetadata = await decryptData<DecryptedMetadata>(
+			existingNote.metaCipher,
+			existingNote.metaIv,
+			key
+		);
+	}
+
+	// Merge updates with current metadata
+	const updatedMetadata: DecryptedMetadata = {
+		...currentMetadata,
+		...updates,
+		// Ensure title is never empty
+		title: updates.title !== undefined 
+			? (updates.title.trim() || 'Untitled Note')
+			: currentMetadata.title
+	};
+
+	// Encrypt updated metadata
+	const metaEncrypted = await encryptData(updatedMetadata, key);
+
+	const now = Date.now();
+
+	// Mark this note as optimistically updated to prevent hook overwrites
+	optimisticallyUpdatedNotes.set(noteId, now);
+
+	// Optimistically update the store first (for immediate UI feedback)
+	notesWithMetadata.update((notes) => {
+		const index = notes.findIndex((n) => n.id === noteId);
+		if (index >= 0) {
+			notes[index] = {
+				...notes[index],
+				metadata: updatedMetadata,
+				updatedAt: now
+			};
+			// Re-sort by update time
+			return notes.sort((a, b) => b.updatedAt - a.updatedAt);
+		}
+		return notes;
+	});
+
+	// Then update database
+	await activeDb.notes.update(noteId, {
+		metaCipher: metaEncrypted.ciphertext,
+		metaIv: metaEncrypted.iv,
+		updatedAt: now
+	});
+
+	// Clear the optimistic update marker after a delay
+	// This allows the DB hook to eventually sync the data
+	setTimeout(() => {
+		optimisticallyUpdatedNotes.delete(noteId);
+	}, 2000);
 }
 

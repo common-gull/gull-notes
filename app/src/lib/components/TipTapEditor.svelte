@@ -4,7 +4,8 @@
 	import StarterKit from '@tiptap/starter-kit';
 	import EditorToolbar from './EditorToolbar.svelte';
 	import EditorSkeleton from './EditorSkeleton.svelte';
-	import { selectedNoteId, loadNoteContent, getActiveDatabase } from '$lib/stores/notes';
+	import NoteHeader from './NoteHeader.svelte';
+	import { selectedNoteId, loadNoteContent, getActiveDatabase, notesWithMetadata } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 	import Image from '@tiptap/extension-image';
@@ -13,10 +14,23 @@
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
 	let currentNoteId = $state<string | null>(null);
+	let currentMetadata = $state<DecryptedMetadata | null>(null);
 	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 	let loadingNote = $state<boolean>(false);
 	let loadingPromise: Promise<void> | null = null;
 	let lastContentHash = $state<string>('');
+
+	// Watch for metadata changes from the store
+	$effect(() => {
+		if (currentNoteId) {
+			const note = $notesWithMetadata.find(n => n.id === currentNoteId);
+			if (note) {
+				currentMetadata = note.metadata;
+			}
+		} else {
+			currentMetadata = null;
+		}
+	});
 
 	// Simple hash function for content comparison
 	async function hashContent(content: string): Promise<string> {
@@ -286,6 +300,9 @@
 	{/if}
 
 	<div class="flex flex-col h-full" class:opacity-0={loadingNote}>
+		{#if currentNoteId && currentMetadata}
+			<NoteHeader noteId={currentNoteId} metadata={currentMetadata} />
+		{/if}
 		<EditorToolbar editor={editorState.editor} />
 		<div 
 			class="flex-1 overflow-auto editor-container" 
