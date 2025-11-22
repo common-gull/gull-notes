@@ -47,11 +47,29 @@
 	// Watch for note selection changes
 	$effect(() => {
 		if ($selectedNoteId !== currentNoteId && editorState.editor) {
+			// Cancel debounced save since we're saving immediately
+			if (saveTimeout) {
+				clearTimeout(saveTimeout);
+				saveTimeout = null;
+			}
+			
 			// Cancel previous load if still in progress
 			if (loadingPromise) {
 				loadingNote = false;
 			}
-			loadingPromise = loadNote($selectedNoteId);
+			
+			// Save current note before switching (if there is one)
+			// Always load new note regardless of save success/failure
+			if (currentNoteId) {
+				loadingPromise = saveNote()
+					.catch((error) => {
+						console.error('Failed to save note before switching:', error);
+						// TODO: Show user notification about failed save
+					})
+					.then(() => loadNote($selectedNoteId));
+			} else {
+				loadingPromise = loadNote($selectedNoteId);
+			}
 		}
 	});
 
@@ -206,9 +224,20 @@
 	});
 
 	onDestroy(() => {
+		// Clear any pending debounced save
 		if (saveTimeout) {
 			clearTimeout(saveTimeout);
 		}
+		
+		// Save immediately if there's a current note
+		// Note: This is synchronous destruction, but saveNote is async
+		// We can't await here, but the IndexedDB operation will still complete
+		if (currentNoteId && editorState.editor) {
+			saveNote().catch((error) => {
+				console.error('Failed to save note on destroy:', error);
+			});
+		}
+		
 		editorState.editor?.destroy();
 	});
 </script>
