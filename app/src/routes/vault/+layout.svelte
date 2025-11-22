@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import TitleBar from '$lib/components/TitleBar.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -29,7 +30,7 @@
 
 		// Only check for active vault on protected routes
 		if (!isPublicRoute && !$activeVault) {
-			goto('/');
+			goto(resolve('/'));
 			return;
 		}
 

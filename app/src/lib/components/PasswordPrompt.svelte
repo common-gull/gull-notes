@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { openVault } from '$lib/services/vaults';
 	import Button from './ui/button/button.svelte';
-	import Input from './ui/input/input.svelte';
 	import { LockKeyholeIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
 	import type { NotesDatabase } from '$lib/db';
 

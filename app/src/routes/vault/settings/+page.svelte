@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { activeVault, lockVault } from '$lib/stores/vault';
 	import { getActiveDatabase } from '$lib/stores/notes';
 	import { changeVaultPassword, deleteVault } from '$lib/services/vaults';
-	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import {
 		ArrowLeftIcon,
@@ -93,15 +93,10 @@
 			stage = 'Verifying current password...';
 			await new Promise((resolve) => setTimeout(resolve, 100)); // Allow UI to update
 
-			const newVaultId = await changeVaultPassword(
-				$activeVault.id,
-				currentPassword,
-				newPassword,
-				(current, total) => {
-					stage = 'Re-encrypting notes...';
-					progress = { current, total };
-				}
-			);
+			await changeVaultPassword($activeVault.id, currentPassword, newPassword, (current, total) => {
+				stage = 'Re-encrypting notes...';
+				progress = { current, total };
+			});
 
 			stage = 'Password changed successfully!';
 			success = true;
@@ -117,7 +112,7 @@
 					}
 					// Lock vault and redirect to unlock
 					lockVault();
-					goto('/');
+					goto(resolve('/'));
 				}
 			}, 1000);
 		} catch (err) {
@@ -150,7 +145,7 @@
 
 			// Lock vault and redirect to home
 			lockVault();
-			await goto('/');
+			await goto(resolve('/'));
 		} catch (err) {
 			console.error('Failed to delete vault:', err);
 			error = err instanceof Error ? err.message : 'Failed to delete vault';
@@ -178,7 +173,7 @@
 
 	onMount(() => {
 		if (!$activeVault) {
-			goto('/');
+			goto(resolve('/'));
 			return;
 		}
 		loadVaultInfo();
@@ -196,7 +191,7 @@
 <div class="flex h-full flex-col bg-background">
 	<!-- Header -->
 	<header class="flex items-center gap-4 border-b bg-background px-4 py-3">
-		<Button variant="ghost" size="icon" onclick={() => goto('/vault')}>
+		<Button variant="ghost" size="icon" onclick={() => goto(resolve('/vault'))}>
 			<ArrowLeftIcon class="h-5 w-5" />
 		</Button>
 		<h1 class="text-xl font-semibold">Settings</h1>

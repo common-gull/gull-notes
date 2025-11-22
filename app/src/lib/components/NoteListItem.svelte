@@ -46,7 +46,7 @@
 			</div>
 			{#if note.metadata.tags && note.metadata.tags.length > 0}
 				<div class="flex gap-1">
-					{#each note.metadata.tags.slice(0, 2) as tag}
+					{#each note.metadata.tags.slice(0, 2) as tag (tag)}
 						<span class="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
 							{tag}
 						</span>

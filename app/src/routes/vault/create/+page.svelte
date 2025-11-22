@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { createVault } from '$lib/services/vaults';
 	import { activateVault } from '$lib/stores/vault';
 	import { setupDatabaseHooks } from '$lib/stores/notes';
 	import { openDatabase } from '$lib/db';
-	import type { NotesDatabase } from '$lib/db';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { DatabaseIcon, CheckIcon, XIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
 
@@ -70,7 +70,7 @@
 			setupDatabaseHooks(db);
 
 			// Navigate to vault
-			await goto('/vault');
+			await goto(resolve('/vault'));
 		} catch (err) {
 			console.error('Failed to create vault:', err);
 			error = err instanceof Error ? err.message : 'Failed to create vault';
@@ -79,7 +79,7 @@
 	}
 
 	async function handleCancel() {
-		await goto('/');
+		await goto(resolve('/'));
 	}
 
 	function handleKeydown(e: KeyboardEvent) {

@@ -67,7 +67,7 @@
 			</div>
 		{:else}
 			<div class="mb-6 max-h-96 space-y-3 overflow-y-auto">
-				{#each vaults as vault}
+				{#each vaults as vault (vault.id)}
 					<button
 						onclick={() => onSelectVault(vault.id)}
 						class="group flex w-full items-center gap-4 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-accent"

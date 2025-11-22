@@ -101,7 +101,9 @@ test.describe('Note Deletion', () => {
 		await expect(page.locator('aside').getByText('Note to Delete').first()).toBeVisible();
 
 		// Click the action menu button (three dots icon in the note header)
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		// The more button is the last button in the note header (after Tags button)
 		const allButtons = await noteHeader.getByRole('button').all();
 		const moreButton = allButtons[allButtons.length - 1];
@@ -133,7 +135,9 @@ test.describe('Note Deletion', () => {
 		await expect(page.locator('aside').getByText('Note to Keep').first()).toBeVisible();
 
 		// Click the action menu button
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		const allButtons = await noteHeader.getByRole('button').all();
 		const moreButton = allButtons[allButtons.length - 1];
 		await moreButton.click();
@@ -173,7 +177,9 @@ test.describe('Note Deletion', () => {
 		await page.waitForTimeout(500);
 
 		// Verify Second Note is shown in the header
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		await expect(noteHeader.getByText('Second Note').first()).toBeVisible();
 
 		// Delete the second note
@@ -190,8 +196,14 @@ test.describe('Note Deletion', () => {
 		await expect(page.locator('aside').getByText('Second Note')).not.toBeVisible();
 
 		// Verify we're now viewing either First or Third note in the header
-		const firstNoteInHeader = await noteHeader.getByText('First Note').isVisible().catch(() => false);
-		const thirdNoteInHeader = await noteHeader.getByText('Third Note').isVisible().catch(() => false);
+		const firstNoteInHeader = await noteHeader
+			.getByText('First Note')
+			.isVisible()
+			.catch(() => false);
+		const thirdNoteInHeader = await noteHeader
+			.getByText('Third Note')
+			.isVisible()
+			.catch(() => false);
 		expect(firstNoteInHeader || thirdNoteInHeader).toBe(true);
 	});
 
@@ -203,7 +215,9 @@ test.describe('Note Deletion', () => {
 		await expect(page.locator('aside').getByText('Only Note').first()).toBeVisible();
 
 		// Delete the note
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		const allButtons = await noteHeader.getByRole('button').all();
 		const moreButton = allButtons[allButtons.length - 1];
 		await moreButton.click();
@@ -225,7 +239,9 @@ test.describe('Note Deletion', () => {
 		await createNote(page, 'Test Note');
 
 		// Open delete dialog
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		const allButtons = await noteHeader.getByRole('button').all();
 		const moreButton = allButtons[allButtons.length - 1];
 		await moreButton.click();
@@ -249,7 +265,9 @@ test.describe('Note Deletion', () => {
 		await createNote(page, 'Quick Delete');
 
 		// Open delete dialog
-		const noteHeader = page.locator('div.border-b').filter({ has: page.getByRole('button', { name: /Tags/i }) });
+		const noteHeader = page
+			.locator('div.border-b')
+			.filter({ has: page.getByRole('button', { name: /Tags/i }) });
 		const allButtons = await noteHeader.getByRole('button').all();
 		const moreButton = allButtons[allButtons.length - 1];
 		await moreButton.click();

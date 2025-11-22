@@ -1,0 +1,21 @@
+---
+description: Keep all summaries and responses short and concise
+alwaysApply: true
+---
+
+# Keep Summaries Short
+
+Default communication style: SHORT and concise.
+
+## Good Response
+- Added QuickCompare component
+- Fixed 3 linting errors
+
+## Bad Response
+Long paragraphs explaining every detail and decision.
+
+## Rules
+- Use bullet points over paragraphs
+- State what changed, not why (unless asked)
+- Maximum 3-5 bullets for summaries
+- Be verbose only when user explicitly asks

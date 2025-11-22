@@ -1,0 +1,14 @@
+---
+description: Always run code checks after making changes
+alwaysApply: true
+---
+
+
+After making ANY code changes:
+
+1. Fix ALL linter errors before completion `npm run lint`
+2. Fix Svelte check errors `npm run check`
+3. Check TypeScript compilation passes
+4. Verify tests pass `npm run test` 
+
+Don't proceed to next task with linting errors.

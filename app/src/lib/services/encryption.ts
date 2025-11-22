@@ -1,4 +1,5 @@
 import type { DecryptedMetadata, DecryptedContent } from '../types';
+import type { NotesDatabase } from '../db';
 
 interface EncryptionResult {
 	ciphertext: ArrayBuffer;
@@ -174,7 +175,7 @@ export async function decryptDataKey(
  * @param salt Salt used for password derivation
  */
 export async function storeEncryptedDataKey(
-	db: any,
+	db: NotesDatabase,
 	encryptedKey: ArrayBuffer,
 	iv: Uint8Array,
 	salt: Uint8Array
@@ -195,8 +196,9 @@ export async function storeEncryptedDataKey(
  * @returns Encrypted key data or null if not found
  */
 export async function retrieveEncryptedDataKey(
-	db: any
+	db: NotesDatabase
 ): Promise<{ encryptedKey: ArrayBuffer; keyIv: Uint8Array; salt: Uint8Array } | null> {
 	const record = await db.settings.get('encrypted_data_key');
-	return record?.data || null;
+	if (!record) return null;
+	return record.data as { encryptedKey: ArrayBuffer; keyIv: Uint8Array; salt: Uint8Array };
 }

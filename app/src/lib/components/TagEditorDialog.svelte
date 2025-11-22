@@ -91,7 +91,7 @@
 			<!-- Current tags display -->
 			{#if currentTags.length > 0}
 				<div class="mb-4 flex flex-wrap gap-2">
-					{#each currentTags as tag}
+					{#each currentTags as tag (tag)}
 						<span
 							class="inline-flex items-center gap-1 rounded bg-secondary px-2 py-1 text-sm text-secondary-foreground"
 						>
@@ -137,7 +137,7 @@
 						<div
 							class="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-border bg-popover shadow-lg"
 						>
-							{#each filteredSuggestions as suggestion}
+							{#each filteredSuggestions as suggestion (suggestion)}
 								<button
 									type="button"
 									class="w-full px-3 py-2 text-left text-sm transition-colors hover:bg-accent"

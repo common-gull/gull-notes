@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Menu, Search, Lock, Settings } from 'lucide-svelte';
@@ -16,11 +17,11 @@
 
 	async function handleLock() {
 		lockVault();
-		await goto('/');
+		await goto(resolve('/'));
 	}
 
 	async function handleSettings() {
-		await goto('/vault/settings');
+		await goto(resolve('/vault/settings'));
 	}
 </script>
 

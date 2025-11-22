@@ -1,9 +1,9 @@
 import { liveQuery } from 'dexie';
 import type { NotesDatabase } from '../db';
-import type { Note, Folder, DecryptedMetadata, DecryptedContent, FolderTree } from '../types';
+import type { Note, DecryptedMetadata, DecryptedContent, FolderTree } from '../types';
 import { decryptData, encryptData } from '../services/encryption';
 import { sessionKeyManager } from '../services/encryption';
-import { writable, derived, get, readable } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { activeDatabase as vaultActiveDatabase } from './vault';
 
 /**

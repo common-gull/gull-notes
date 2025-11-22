@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { selectedVaultForUnlock, clearVaultSelection, unlockVault } from '$lib/stores/vault';
 	import { setupDatabaseHooks } from '$lib/stores/notes';
 
@@ -19,7 +20,7 @@
 	onMount(() => {
 		if (!$selectedVaultForUnlock) {
 			shouldRedirect = true;
-			goto('/');
+			goto(resolve('/'));
 		}
 	});
 
@@ -47,7 +48,7 @@
 			setupDatabaseHooks(db);
 
 			// Navigate to vault
-			await goto('/vault');
+			await goto(resolve('/vault'));
 		} catch (err) {
 			console.error('Failed to unlock vault:', err);
 			error = err instanceof Error ? err.message : 'Failed to unlock vault';
@@ -60,7 +61,7 @@
 
 	async function handleCancel() {
 		clearVaultSelection();
-		await goto('/');
+		await goto(resolve('/'));
 	}
 
 	function handleKeydown(e: KeyboardEvent) {

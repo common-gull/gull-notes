@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import VaultSelector from '$lib/components/VaultSelector.svelte';
 	import { activeVault, selectVaultForUnlock } from '$lib/stores/vault';
 	import { getVaultMetadata } from '$lib/services/vaults';
@@ -8,7 +9,7 @@
 	// If already unlocked, redirect to vault
 	onMount(() => {
 		if ($activeVault) {
-			goto('/vault');
+			goto(resolve('/vault'));
 		}
 	});
 
@@ -20,12 +21,12 @@
 				name: metadata.name,
 				createdAt: metadata.createdAt
 			});
-			await goto('/vault/unlock');
+			await goto(resolve('/vault/unlock'));
 		}
 	}
 
 	async function handleCreateVault() {
-		await goto('/vault/create');
+		await goto(resolve('/vault/create'));
 	}
 </script>
 

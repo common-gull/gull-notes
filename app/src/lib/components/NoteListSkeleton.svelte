@@ -1,5 +1,5 @@
 <div class="w-full space-y-1">
-	{#each Array(5) as _, i (i)}
+	{#each Array.from({ length: 5 }, (_, i) => i) as i (i)}
 		<div class="w-full animate-pulse rounded-md px-3 py-2">
 			<div class="flex flex-col gap-1">
 				<div class="h-4 w-3/4 rounded bg-muted"></div>

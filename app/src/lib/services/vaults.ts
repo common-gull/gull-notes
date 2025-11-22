@@ -124,7 +124,7 @@ export async function openVault(vaultId: string, password: string): Promise<Note
 		sessionKeyManager.setKey(dataKey);
 
 		return db;
-	} catch (error) {
+	} catch {
 		db.close();
 		throw new Error('Invalid password');
 	}
@@ -212,7 +212,7 @@ export async function changeVaultPassword(
 		let oldDataKey: CryptoKey;
 		try {
 			oldDataKey = await decryptDataKey(oldKeyData.encryptedKey, oldKeyData.keyIv, oldMasterKey);
-		} catch (error) {
+		} catch {
 			throw new Error('Current password is incorrect');
 		}
 
@@ -355,7 +355,7 @@ export async function changeVaultPassword(
 				try {
 					await decryptData(testNote.metaCipher, testNote.metaIv, testKey);
 					await decryptData(testNote.contentCipher, testNote.contentIv, testKey);
-				} catch (error) {
+				} catch {
 					throw new Error(
 						`Failed to decrypt note ${testNote.id} in new vault. Encryption may have failed.`
 					);

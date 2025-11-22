@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { Editor } from '@tiptap/core';
+	import type { EditorView } from '@tiptap/pm/view';
 	import StarterKit from '@tiptap/starter-kit';
 	import EditorToolbar from './EditorToolbar.svelte';
 	import EditorSkeleton from './EditorSkeleton.svelte';
@@ -57,7 +58,7 @@
 	}
 
 	// Helper function to insert image into editor
-	async function insertImage(view: any, file: File, pos?: number) {
+	async function insertImage(view: EditorView, file: File, pos?: number) {
 		try {
 			const base64 = await fileToBase64(file);
 			const { schema } = view.state;

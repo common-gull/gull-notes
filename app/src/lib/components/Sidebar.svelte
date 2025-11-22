@@ -3,7 +3,7 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Plus, Menu, X } from 'lucide-svelte';
+	import { Plus } from 'lucide-svelte';
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';

@@ -120,7 +120,7 @@
 		<div class="flex items-center gap-2">
 			{#if metadata.tags && metadata.tags.length > 0}
 				<div class="flex items-center gap-1">
-					{#each metadata.tags.slice(0, 3) as tag}
+					{#each metadata.tags.slice(0, 3) as tag (tag)}
 						<span class="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground">
 							{tag}
 						</span>
