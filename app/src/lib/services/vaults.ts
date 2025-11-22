@@ -166,3 +166,226 @@ export async function getVaultMetadata(vaultId: string): Promise<VaultMetadata |
 	}
 }
 
+/**
+ * List ALL IndexedDB databases (including non-vault ones) for recovery purposes
+ * @returns Array of all database names
+ */
+export async function listAllDatabases(): Promise<string[]> {
+	if (!indexedDB.databases) {
+		console.warn('indexedDB.databases() not supported in this browser');
+		return [];
+	}
+
+	const databases = await indexedDB.databases();
+	return databases.map(db => db.name).filter((name): name is string => name !== undefined);
+}
+
+/**
+ * Change vault password with full key rotation (safe copy-and-replace strategy)
+ * @param vaultId Current vault database name
+ * @param currentPassword Current password
+ * @param newPassword New password
+ * @param onProgress Optional progress callback (current, total)
+ * @returns New vault ID
+ * @throws Error if current password is incorrect or operation fails
+ */
+export async function changeVaultPassword(
+	vaultId: string,
+	currentPassword: string,
+	newPassword: string,
+	onProgress?: (current: number, total: number) => void
+): Promise<string> {
+	let oldVault: NotesDatabase | null = null;
+	let newVault: NotesDatabase | null = null;
+	let newVaultId: string | null = null;
+
+	try {
+		// Phase 1: Verification
+		oldVault = openDatabase(vaultId);
+		const oldKeyData = await retrieveEncryptedDataKey(oldVault);
+		if (!oldKeyData) {
+			throw new Error('Vault data key not found');
+		}
+
+		// Derive old master key and decrypt old data key
+		const oldMasterKey = await deriveMasterKey(currentPassword, oldKeyData.salt);
+		let oldDataKey: CryptoKey;
+		try {
+			oldDataKey = await decryptDataKey(oldKeyData.encryptedKey, oldKeyData.keyIv, oldMasterKey);
+		} catch (error) {
+			throw new Error('Current password is incorrect');
+		}
+
+		// Get vault metadata to preserve display name
+		const metadata = await getVaultMetadata(vaultId);
+		if (!metadata) {
+			throw new Error('Vault metadata not found');
+		}
+
+		// Phase 2: Create New Vault
+		newVaultId = `vault_${crypto.randomUUID()}_temp`;
+		newVault = openDatabase(newVaultId);
+
+		// Generate new data key
+		const newDataKey = await generateDataKey();
+
+		// Generate new salt and derive new master key
+		const newSalt = crypto.getRandomValues(new Uint8Array(16));
+		const newMasterKey = await deriveMasterKey(newPassword, newSalt);
+
+		// Encrypt new data key with new master key
+		const { ciphertext: newEncryptedKey, iv: newKeyIv } = await encryptDataKey(
+			newDataKey,
+			newMasterKey
+		);
+
+		// Store encrypted data key in new vault
+		await storeEncryptedDataKey(newVault, newEncryptedKey, newKeyIv, newSalt);
+
+		// Store vault metadata with same display name
+		await newVault.settings.put({
+			id: 'vault_metadata',
+			data: {
+				name: metadata.name,
+				createdAt: metadata.createdAt
+			} as VaultMetadata
+		});
+
+		// Phase 3: Copy & Re-encrypt (Paginated for memory efficiency)
+		const total = await oldVault.notes.count();
+		let processed = 0;
+
+		// Import encryption functions
+		const { encryptData, decryptData } = await import('./encryption');
+
+		// Process notes in batches to keep memory usage low
+		const batchSize = 50; // Process 50 notes at a time
+		let offset = 0;
+
+		while (offset < total) {
+			// Load a batch of notes
+			const batch = await oldVault.notes.offset(offset).limit(batchSize).toArray();
+
+			// Process each note in the batch
+			for (const encryptedNote of batch) {
+				// Decrypt with old key
+				const noteMetadata = await decryptData(
+					encryptedNote.metaCipher,
+					encryptedNote.metaIv,
+					oldDataKey
+				);
+				const noteContent = await decryptData(
+					encryptedNote.contentCipher,
+					encryptedNote.contentIv,
+					oldDataKey
+				);
+
+				// Encrypt with new key
+				const newMeta = await encryptData(noteMetadata, newDataKey);
+				const newContent = await encryptData(noteContent, newDataKey);
+
+				// Store in new vault with same ID
+				await newVault.notes.add({
+					id: encryptedNote.id,
+					metaCipher: newMeta.ciphertext,
+					metaIv: newMeta.iv,
+					contentCipher: newContent.ciphertext,
+					contentIv: newContent.iv,
+					createdAt: encryptedNote.createdAt,
+					updatedAt: encryptedNote.updatedAt,
+					schemaVersion: 1
+				});
+
+				processed++;
+				onProgress?.(processed, total);
+			}
+
+			// Move to next batch
+			offset += batchSize;
+		}
+
+		// Copy folder settings if they exist
+		const folderSettings = await oldVault.settings.get('folders');
+		if (folderSettings) {
+			await newVault.settings.put(folderSettings);
+		}
+
+		// Phase 4: Verification
+		// CRITICAL: Verify note count matches before proceeding
+		const newVaultNoteCount = await newVault.notes.count();
+		if (newVaultNoteCount !== total) {
+			throw new Error(
+				`Note count mismatch! Original: ${total}, New: ${newVaultNoteCount}. Aborting to prevent data loss.`
+			);
+		}
+
+		// Verify all note IDs are present
+		const oldNoteIds = new Set((await oldVault.notes.toArray()).map(n => n.id));
+		const newNoteIds = new Set((await newVault.notes.toArray()).map(n => n.id));
+		
+		const missingIds = [...oldNoteIds].filter(id => !newNoteIds.has(id));
+		if (missingIds.length > 0) {
+			throw new Error(
+				`Missing ${missingIds.length} note(s) in new vault! IDs: ${missingIds.join(', ')}. Aborting.`
+			);
+		}
+
+		oldVault.close();
+		oldVault = null;
+
+		newVault.close();
+		newVault = null;
+
+		// Try to open new vault with new password
+		const testVault = await openVault(newVaultId, newPassword);
+		
+		// Verify by decrypting a random sample of notes (or all if few)
+		const notesToVerify = Math.min(5, total); // Verify up to 5 random notes
+		if (notesToVerify > 0) {
+			const allNotes = await testVault.notes.toArray();
+			const testKey = sessionKeyManager.getKey();
+			if (!testKey) {
+				throw new Error('Session key not available after vault open');
+			}
+
+			// Test decrypt a sample of notes to ensure encryption worked
+			for (let i = 0; i < notesToVerify; i++) {
+				const randomIndex = Math.floor(Math.random() * allNotes.length);
+				const testNote = allNotes[randomIndex];
+				try {
+					await decryptData(testNote.metaCipher, testNote.metaIv, testKey);
+					await decryptData(testNote.contentCipher, testNote.contentIv, testKey);
+				} catch (error) {
+					throw new Error(
+						`Failed to decrypt note ${testNote.id} in new vault. Encryption may have failed.`
+					);
+				}
+			}
+		}
+
+		testVault.close();
+
+		// Phase 5: Finalize
+		// Delete old vault
+		await deleteVault(vaultId);
+
+		return newVaultId;
+	} catch (error) {
+		// Cleanup on error
+		if (oldVault) {
+			oldVault.close();
+		}
+		if (newVault) {
+			newVault.close();
+		}
+		if (newVaultId) {
+			// Delete temporary vault
+			await deleteVault(newVaultId).catch(() => {
+				// Ignore cleanup errors
+			});
+		}
+
+		throw error;
+	}
+}
+

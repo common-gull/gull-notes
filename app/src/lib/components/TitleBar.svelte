@@ -8,10 +8,11 @@
 		onMenuClick?: () => void;
 		showMenuButton?: boolean;
 		onLock?: () => void;
+		onSettings?: () => void;
 		vaultName?: string;
 	}
 
-	let { onMenuClick, showMenuButton = false, onLock, vaultName }: Props = $props();
+	let { onMenuClick, showMenuButton = false, onLock, onSettings, vaultName }: Props = $props();
 </script>
 
 <header class="border-b bg-background px-4 py-3 flex items-center gap-4">
@@ -41,7 +42,7 @@
 	</div>
 
 	<div class="flex items-center gap-2">
-		<Button variant="ghost" size="icon" title="Settings">
+		<Button variant="ghost" size="icon" title="Settings" onclick={onSettings}>
 			<Settings class="h-5 w-5" />
 		</Button>
 		<Button variant="ghost" size="icon" title="Lock Vault" onclick={onLock}>

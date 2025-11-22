@@ -7,6 +7,7 @@
 	import VaultSelector from '$lib/components/VaultSelector.svelte';
 	import PasswordPrompt from '$lib/components/PasswordPrompt.svelte';
 	import CreateVaultDialog from '$lib/components/CreateVaultDialog.svelte';
+	import SettingsDialog from '$lib/components/SettingsDialog.svelte';
 	import { filteredNotes, notesLoading, setActiveDatabase, setupDatabaseHooks } from '$lib/stores/notes';
 	import { getVaultMetadata } from '$lib/services/vaults';
 	import { sessionKeyManager } from '$lib/services/encryption';
@@ -19,6 +20,7 @@
 	let selectedVaultName = $state<string>('');
 	let currentDb = $state<NotesDatabase | null>(null);
 	let currentVaultName = $state<string>('');
+	let showSettings = $state(false);
 
 	let isMobile = $state(false);
 	let mobileMenuOpen = $state(false);
@@ -90,7 +92,31 @@
 		selectedVaultId = null;
 		selectedVaultName = '';
 		currentVaultName = '';
+		showSettings = false;
 		authState = 'selecting';
+	}
+
+	function handleOpenSettings() {
+		showSettings = true;
+	}
+
+	function handleCloseSettings() {
+		showSettings = false;
+	}
+
+	async function handlePasswordChanged(newVaultId: string) {
+		showSettings = false;
+		
+		// Lock the vault and clear session
+		handleLockVault();
+		
+		// Pre-select the new vault for convenience
+		const metadata = await getVaultMetadata(newVaultId);
+		if (metadata) {
+			selectedVaultId = newVaultId;
+			selectedVaultName = metadata.name;
+			authState = 'unlocking';
+		}
 	}
 
 	onMount(() => {
@@ -123,6 +149,7 @@
 			onMenuClick={toggleMobileMenu} 
 			showMenuButton={isMobile}
 			onLock={handleLockVault}
+			onSettings={handleOpenSettings}
 			vaultName={currentVaultName}
 		/>
 
@@ -146,5 +173,14 @@
 				{/if}
 			</main>
 		</div>
+
+		{#if showSettings && selectedVaultId}
+			<SettingsDialog 
+				vaultId={selectedVaultId}
+				vaultName={currentVaultName}
+				onClose={handleCloseSettings}
+				onPasswordChanged={handlePasswordChanged}
+			/>
+		{/if}
 	</div>
 {/if}
