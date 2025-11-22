@@ -8,6 +8,7 @@
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 	import Image from '@tiptap/extension-image';
+	import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
@@ -189,7 +190,11 @@
 				Image.configure({
 					inline: true,
 					allowBase64: true
-				})
+				}),
+				Emoji.configure({
+                    emojis: gitHubEmojis,
+                    enableEmoticons: true,
+                }),
 			],
 			content: '<p>Select or create a note to start editing</p>',
 			onTransaction: () => {
@@ -353,6 +358,16 @@
 	:global(.ProseMirror img.ProseMirror-selectednode) {
 		outline: 3px solid var(--color-primary);
 		outline-offset: 2px;
+	}
+
+	/* Emoji extension styles - make emojis inline */
+	:global(.ProseMirror [data-type='emoji'] img) {
+		display: inline-block;
+		height: 1.2em;
+		width: 1.2em;
+		margin: 0 0.05em;
+		vertical-align: -0.28em;
+		border-radius: 0;
 	}
 
 	/* Reduce excessive spacing in lists */
