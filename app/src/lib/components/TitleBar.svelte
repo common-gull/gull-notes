@@ -68,7 +68,7 @@
 		</Button>
 	{/if}
 
-	<div class="flex items-center gap-2">
+	<div class="flex items-baseline gap-2">
 		<h1 class="text-xl font-semibold">Gull Notes</h1>
 		{#if vaultName}
 			<span class="hidden text-sm text-muted-foreground sm:inline">• {vaultName}</span>
