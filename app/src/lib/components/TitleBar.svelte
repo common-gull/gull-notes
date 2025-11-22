@@ -3,9 +3,19 @@
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Menu, Search, Lock, Settings, PanelLeftClose, PanelLeft } from 'lucide-svelte';
+	import {
+		Menu,
+		Search,
+		Lock,
+		Settings,
+		PanelLeftClose,
+		PanelLeft,
+		Sun,
+		Moon
+	} from 'lucide-svelte';
 	import { searchQuery } from '$lib/stores/notes';
 	import { lockVault } from '$lib/stores/vault';
+	import { theme, getResolvedTheme } from '$lib/stores/theme';
 
 	interface Props {
 		onMenuClick?: () => void;
@@ -31,6 +41,12 @@
 	async function handleSettings() {
 		await goto(resolve('/vault/settings'));
 	}
+
+	function handleThemeToggle() {
+		theme.toggle();
+	}
+
+	let isDark = $derived(getResolvedTheme($theme) === 'dark');
 </script>
 
 <header class="flex items-center gap-4 border-b bg-background px-4 py-3">
@@ -72,6 +88,18 @@
 	{/if}
 
 	<div class="flex items-center gap-2 {showMenuButton ? 'ml-auto' : ''}">
+		<Button
+			variant="ghost"
+			size="icon"
+			title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+			onclick={handleThemeToggle}
+		>
+			{#if isDark}
+				<Sun class="h-5 w-5" />
+			{:else}
+				<Moon class="h-5 w-5" />
+			{/if}
+		</Button>
 		<Button variant="ghost" size="icon" title="Settings" onclick={handleSettings}>
 			<Settings class="h-5 w-5" />
 		</Button>
