@@ -94,19 +94,14 @@ export async function encryptData(
 	data: DecryptedMetadata | DecryptedContent,
 	key: CryptoKey
 ): Promise<EncryptionResult> {
-	// PLACEHOLDER: For now, just encode without encryption for UI development
 	const encoded = new TextEncoder().encode(JSON.stringify(data));
 	const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for GCM
 
-	// TODO: Uncomment for real encryption
-	// const ciphertext = await crypto.subtle.encrypt(
-	// 	{ name: 'AES-GCM', iv: iv },
-	// 	key,
-	// 	encoded
-	// );
-
-	// Placeholder: return unencrypted data
-	const ciphertext = encoded.buffer;
+	const ciphertext = await crypto.subtle.encrypt(
+		{ name: 'AES-GCM', iv: iv },
+		key,
+		encoded
+	);
 
 	return { ciphertext, iv };
 }
@@ -120,19 +115,16 @@ export async function encryptData(
  */
 export async function decryptData<T = DecryptedMetadata | DecryptedContent>(
 	ciphertext: ArrayBuffer,
-	iv: Uint8Array,
+	iv: Uint8Array | ArrayBuffer,
 	key: CryptoKey
 ): Promise<T> {
-	// PLACEHOLDER: For now, just decode without decryption
-	// TODO: Uncomment for real decryption
-	// const decrypted = await crypto.subtle.decrypt(
-	// 	{ name: 'AES-GCM', iv: iv },
-	// 	key,
-	// 	ciphertext
-	// );
+	const decrypted = await crypto.subtle.decrypt(
+		{ name: 'AES-GCM', iv: iv as BufferSource },
+		key,
+		ciphertext
+	);
 
-	// Placeholder: treat as unencrypted data
-	const decoded = new TextDecoder().decode(ciphertext);
+	const decoded = new TextDecoder().decode(decrypted);
 	return JSON.parse(decoded) as T;
 }
 
@@ -179,10 +171,37 @@ export async function decryptDataKey(
 }
 
 /**
- * Initialize encryption system (for development, creates a dummy key)
+ * Store encrypted data key in vault settings
+ * @param db Database instance for the vault
+ * @param encryptedKey Encrypted data key
+ * @param iv IV used for encrypting the data key
+ * @param salt Salt used for password derivation
  */
-export async function initializeEncryption(): Promise<void> {
-	const dummyKey = await generateDataKey();
-	sessionKeyManager.setKey(dummyKey);
+export async function storeEncryptedDataKey(
+	db: any,
+	encryptedKey: ArrayBuffer,
+	iv: Uint8Array,
+	salt: Uint8Array
+): Promise<void> {
+	await db.settings.put({
+		id: 'encrypted_data_key',
+		data: {
+			encryptedKey,
+			keyIv: iv,
+			salt
+		}
+	});
+}
+
+/**
+ * Retrieve encrypted data key from vault settings
+ * @param db Database instance for the vault
+ * @returns Encrypted key data or null if not found
+ */
+export async function retrieveEncryptedDataKey(
+	db: any
+): Promise<{ encryptedKey: ArrayBuffer; keyIv: Uint8Array; salt: Uint8Array } | null> {
+	const record = await db.settings.get('encrypted_data_key');
+	return record?.data || null;
 }
 

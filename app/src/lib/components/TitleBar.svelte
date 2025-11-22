@@ -7,9 +7,11 @@
 	interface Props {
 		onMenuClick?: () => void;
 		showMenuButton?: boolean;
+		onLock?: () => void;
+		vaultName?: string;
 	}
 
-	let { onMenuClick, showMenuButton = false }: Props = $props();
+	let { onMenuClick, showMenuButton = false, onLock, vaultName }: Props = $props();
 </script>
 
 <header class="border-b bg-background px-4 py-3 flex items-center gap-4">
@@ -21,6 +23,9 @@
 
 	<div class="flex items-center gap-2">
 		<h1 class="text-xl font-semibold">Secure Notes</h1>
+		{#if vaultName}
+			<span class="text-sm text-muted-foreground">• {vaultName}</span>
+		{/if}
 	</div>
 
 	<div class="flex-1 max-w-md mx-auto">
@@ -39,7 +44,7 @@
 		<Button variant="ghost" size="icon" title="Settings">
 			<Settings class="h-5 w-5" />
 		</Button>
-		<Button variant="ghost" size="icon" title="Lock">
+		<Button variant="ghost" size="icon" title="Lock Vault" onclick={onLock}>
 			<Lock class="h-5 w-5" />
 		</Button>
 	</div>

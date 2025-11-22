@@ -1,9 +1,14 @@
 import { liveQuery } from 'dexie';
-import { db } from '../db';
+import type { NotesDatabase } from '../db';
 import type { Note, Folder, DecryptedMetadata, DecryptedContent, FolderTree } from '../types';
 import { decryptData } from '../services/encryption';
 import { sessionKeyManager } from '../services/encryption';
 import { writable, derived, get, readable } from 'svelte/store';
+
+/**
+ * Active database instance (set by vault system)
+ */
+let activeDb: NotesDatabase | null = null;
 
 /**
  * Store for all notes with decrypted metadata
@@ -16,8 +21,30 @@ export const notesWithMetadata = writable<Array<Omit<Note, 'content'>>>([]);
  */
 export const notesLoading = writable<boolean>(true);
 
+/**
+ * Set the active database instance
+ * @param db Database instance from opened vault
+ */
+export function setActiveDatabase(db: NotesDatabase | null) {
+	activeDb = db;
+	if (db) {
+		// Reload notes when database changes
+		queueLoadAllNotes();
+	} else {
+		// Clear notes when database is cleared
+		notesWithMetadata.set([]);
+		selectedNoteId.set(null);
+	}
+}
+
 // Function to load and decrypt all notes
 async function loadAllNotes() {
+	if (!activeDb) {
+		notesWithMetadata.set([]);
+		notesLoading.set(false);
+		return;
+	}
+
 	const key = sessionKeyManager.getKey();
 	if (!key) {
 		notesWithMetadata.set([]);
@@ -27,7 +54,7 @@ async function loadAllNotes() {
 
 	notesLoading.set(true);
 
-	const allNotes = await db.notes.toArray();
+	const allNotes = await activeDb.notes.toArray();
 
 	// Decrypt metadata for each note (lightweight)
 	const notesWithMeta = await Promise.all(
@@ -62,10 +89,12 @@ async function loadAllNotes() {
 
 // Function to update a single note in the list (when note content changes)
 async function updateSingleNote(noteId: string) {
+	if (!activeDb) return;
+
 	const key = sessionKeyManager.getKey();
 	if (!key) return;
 
-	const encryptedNote = await db.notes.get(noteId);
+	const encryptedNote = await activeDb.notes.get(noteId);
 	if (!encryptedNote) return;
 
 	try {
@@ -117,24 +146,30 @@ function queueLoadAllNotes(): void {
 }
 
 sessionKeyManager.keyAvailable.subscribe((available) => {
-	if (available) {
+	if (available && activeDb) {
 		queueLoadAllNotes();
 	}
 });
 
-db.notes.hook('creating', () => {
-	queueLoadAllNotes();
-});
+/**
+ * Setup database hooks for the active database
+ * Should be called after setActiveDatabase
+ */
+export function setupDatabaseHooks(db: NotesDatabase) {
+	db.notes.hook('creating', () => {
+		queueLoadAllNotes();
+	});
 
-db.notes.hook('updating', (modifications, primKey) => {
-	// Note updated - just update that specific note in the list instead of reloading everything
-	// This prevents flickering when switching between notes
-	void updateSingleNote(primKey as string);
-});
+	db.notes.hook('updating', (modifications, primKey) => {
+		// Note updated - just update that specific note in the list instead of reloading everything
+		// This prevents flickering when switching between notes
+		void updateSingleNote(primKey as string);
+	});
 
-db.notes.hook('deleting', () => {
-	queueLoadAllNotes();
-});
+	db.notes.hook('deleting', () => {
+		queueLoadAllNotes();
+	});
+}
 
 /**
  * Store for the currently selected note ID
@@ -146,7 +181,14 @@ export const selectedNoteId = writable<string | null>(null);
  * Uses liveQuery to load from settings table
  */
 export const folders = liveQuery(async () => {
-	const folderSettings = await db.settings.get('folders');
+	if (!activeDb) {
+		return {
+			folders: [],
+			version: 1
+		} as FolderTree;
+	}
+
+	const folderSettings = await activeDb.settings.get('folders');
 	if (!folderSettings) {
 		// Return default empty structure
 		return {
@@ -227,13 +269,18 @@ function updateFilteredNotes() {
  * Get full note content (heavy operation, only when viewing)
  */
 export async function loadNoteContent(noteId: string): Promise<Note | null> {
-	const key = sessionKeyManager.getKey();
-	if (!key) {
-		console.error('No encryption key available');
+	if (!activeDb) {
+		// Silently return null - vault is being closed/locked
 		return null;
 	}
 
-	const encryptedNote = await db.notes.get(noteId);
+	const key = sessionKeyManager.getKey();
+	if (!key) {
+		// Silently return null - vault is being closed/locked
+		return null;
+	}
+
+	const encryptedNote = await activeDb.notes.get(noteId);
 	if (!encryptedNote) {
 		return null;
 	}
@@ -268,9 +315,21 @@ export async function loadNoteContent(noteId: string): Promise<Note | null> {
  * Save folder tree to database
  */
 export async function saveFolderTree(tree: FolderTree): Promise<void> {
-	await db.settings.put({
+	if (!activeDb) {
+		// Silently ignore - vault is being closed/locked
+		return;
+	}
+
+	await activeDb.settings.put({
 		id: 'folders',
 		data: tree
 	});
+}
+
+/**
+ * Get the active database instance
+ */
+export function getActiveDatabase(): NotesDatabase | null {
+	return activeDb;
 }
 

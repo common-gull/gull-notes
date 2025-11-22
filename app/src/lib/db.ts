@@ -4,13 +4,13 @@ import type { EncryptedNote, AppSettings } from './types';
 /**
  * Database class with typed tables
  */
-class NotesDatabase extends Dexie {
+export class NotesDatabase extends Dexie {
 	// Tables are declared as properties
 	notes!: EntityTable<EncryptedNote, 'id'>;
 	settings!: EntityTable<AppSettings, 'id'>;
 
-	constructor() {
-		super('SecureNotesDB');
+	constructor(vaultName: string) {
+		super(vaultName);
 
 		// Define schema
 		this.version(1).stores({
@@ -22,9 +22,16 @@ class NotesDatabase extends Dexie {
 	}
 }
 
-// Export singleton instance
-export const db = new NotesDatabase();
+/**
+ * Open a database for a specific vault
+ * @param vaultName The name of the vault database (e.g., 'vault_{uuid}')
+ * @returns NotesDatabase instance
+ */
+export function openDatabase(vaultName: string): NotesDatabase {
+	return new NotesDatabase(vaultName);
+}
 
-// Export type for use in other files
-export type { NotesDatabase };
+// Keep backward compatibility with a default instance for migration
+// This will be replaced by the vault system
+export const db = new NotesDatabase('SecureNotesDB');
 

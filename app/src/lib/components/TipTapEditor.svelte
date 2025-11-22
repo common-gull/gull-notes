@@ -4,8 +4,7 @@
 	import StarterKit from '@tiptap/starter-kit';
 	import EditorToolbar from './EditorToolbar.svelte';
 	import EditorSkeleton from './EditorSkeleton.svelte';
-	import { selectedNoteId, loadNoteContent } from '$lib/stores/notes';
-	import { db } from '$lib/db';
+	import { selectedNoteId, loadNoteContent, getActiveDatabase } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 	import Image from '@tiptap/extension-image';
@@ -104,9 +103,15 @@
 	async function saveNote() {
 		if (!editorState.editor || !currentNoteId) return;
 
+		const db = getActiveDatabase();
+		if (!db) {
+			// Silently ignore - vault is being closed/locked
+			return;
+		}
+
 		const key = sessionKeyManager.getKey();
 		if (!key) {
-			console.error('No encryption key available');
+			// Silently ignore - vault is being closed/locked
 			return;
 		}
 

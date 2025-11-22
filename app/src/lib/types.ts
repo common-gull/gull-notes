@@ -83,3 +83,29 @@ export interface FolderTree {
 	version: number;
 }
 
+/**
+ * Vault metadata stored in each vault's settings
+ */
+export interface VaultMetadata {
+	name: string;
+	createdAt: number;
+}
+
+/**
+ * Vault information for listing/selection
+ */
+export interface VaultInfo {
+	id: string; // Database name (vault_{uuid})
+	name: string;
+	createdAt: number;
+}
+
+/**
+ * Encrypted data key storage format
+ */
+export interface EncryptedKeyData {
+	encryptedKey: ArrayBuffer;
+	keyIv: Uint8Array;
+	salt: Uint8Array;
+}
+

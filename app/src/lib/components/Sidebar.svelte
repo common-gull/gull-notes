@@ -7,8 +7,7 @@
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';
-	import { filteredNotes, folders, selectedNoteId, notesLoading } from '$lib/stores/notes';
-	import { db } from '$lib/db';
+	import { filteredNotes, folders, selectedNoteId, notesLoading, getActiveDatabase } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 
@@ -21,9 +20,15 @@
 	let { isMobile = false, open = false, onOpenChange }: Props = $props();
 
 	async function createNewNote() {
+		const db = getActiveDatabase();
+		if (!db) {
+			// Silently ignore - vault is being closed/locked
+			return;
+		}
+
 		const key = sessionKeyManager.getKey();
 		if (!key) {
-			console.error('No encryption key available');
+			// Silently ignore - vault is being closed/locked
 			return;
 		}
 
