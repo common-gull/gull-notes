@@ -1,41 +1,24 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 
-// Helper to clear IndexedDB between tests
-async function clearIndexedDB(page) {
-	await page.evaluate(() => {
-		return new Promise((resolve) => {
-			const dbs = indexedDB.databases();
-			dbs.then((databases) => {
-				Promise.all(
-					databases.map((db) => {
-						if (db.name) {
-							return new Promise((res) => {
-								const req = indexedDB.deleteDatabase(db.name!);
-								req.onsuccess = () => res(true);
-								req.onerror = () => res(false);
-							});
-						}
-						return Promise.resolve();
-					})
-				).then(() => resolve(true));
-			});
-		});
-	});
+// Helper to generate unique vault name
+function getUniqueVaultName() {
+	return `Test Vault ${randomUUID()}`;
 }
 
 test.describe('Title and Tag Editing', () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto('http://localhost:4173/');
-		await clearIndexedDB(page);
-		await page.reload();
-	});
+	// No beforeEach needed - each test creates its own unique vault
 
 	test('should create vault, note, and edit title', async ({ page }) => {
-		// Create a new vault
+		await page.goto('http://localhost:4173/');
+		
+		const vaultName = getUniqueVaultName();
+		
+		// Create a new vault with unique name
 		await page.getByRole('button', { name: 'Create New Vault' }).click();
 
-		// Fill vault creation form
-		await page.fill('input#vault-name', 'Test Vault');
+		// Fill vault creation form with unique name
+		await page.fill('input#vault-name', vaultName);
 		const passwordInputs = await page.locator('input[type="password"]').all();
 		await passwordInputs[0].fill('TestPassword123!');
 		await passwordInputs[1].fill('TestPassword123!');
@@ -93,9 +76,13 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should add and manage tags', async ({ page }) => {
-		// Create vault
+		await page.goto('http://localhost:4173/');
+		
+		const vaultName = getUniqueVaultName();
+		
+		// Create vault with unique name
 		await page.getByRole('button', { name: 'Create New Vault' }).click();
-		await page.fill('input#vault-name', 'Test Vault');
+		await page.fill('input#vault-name', vaultName);
 		const passwordInputs = await page.locator('input[type="password"]').all();
 		await passwordInputs[0].fill('TestPassword123!');
 		await passwordInputs[1].fill('TestPassword123!');
@@ -155,9 +142,13 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should show tag autocomplete with existing tags', async ({ page }) => {
-		// Create vault
+		await page.goto('http://localhost:4173/');
+		
+		const vaultName = getUniqueVaultName();
+		
+		// Create vault with unique name
 		await page.getByRole('button', { name: 'Create New Vault' }).click();
-		await page.fill('input#vault-name', 'Test Vault');
+		await page.fill('input#vault-name', vaultName);
 		const passwordInputs = await page.locator('input[type="password"]').all();
 		await passwordInputs[0].fill('TestPassword123!');
 		await passwordInputs[1].fill('TestPassword123!');
@@ -218,9 +209,13 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should persist title and tags across note switches', async ({ page }) => {
-		// Create vault
+		await page.goto('http://localhost:4173/');
+		
+		const vaultName = getUniqueVaultName();
+		
+		// Create vault with unique name
 		await page.getByRole('button', { name: 'Create New Vault' }).click();
-		await page.fill('input#vault-name', 'Test Vault');
+		await page.fill('input#vault-name', vaultName);
 		const passwordInputs = await page.locator('input[type="password"]').all();
 		await passwordInputs[0].fill('TestPassword123!');
 		await passwordInputs[1].fill('TestPassword123!');

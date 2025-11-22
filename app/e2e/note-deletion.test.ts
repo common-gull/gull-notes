@@ -1,36 +1,19 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 
-// Helper to clear IndexedDB between tests
-async function clearIndexedDB(page) {
-	await page.evaluate(() => {
-		return new Promise((resolve) => {
-			const dbs = indexedDB.databases();
-			dbs.then((databases) => {
-				Promise.all(
-					databases.map((db) => {
-						if (db.name) {
-							return new Promise((res) => {
-								const req = indexedDB.deleteDatabase(db.name!);
-								req.onsuccess = () => res(true);
-								req.onerror = () => res(false);
-							});
-						}
-						return Promise.resolve();
-					})
-				).then(() => resolve(true));
-			});
-		});
-	});
+// Helper to generate unique vault name
+function getUniqueVaultName() {
+	return `Test Vault ${randomUUID()}`;
 }
 
 // Helper to create a vault and get to the main notes view
-async function createVaultAndLogin(page, vaultName = 'Test Vault', password = 'TestPassword123!') {
-	// Navigate first, then clear, then reload
+async function createVaultAndLogin(page, vaultName?: string, password = 'TestPassword123!') {
+	// Use unique vault name if not provided
+	if (!vaultName) {
+		vaultName = getUniqueVaultName();
+	}
+	
 	await page.goto('http://localhost:4173/');
-	await page.waitForLoadState('domcontentloaded');
-	await clearIndexedDB(page);
-	await page.reload();
-	await page.waitForLoadState('domcontentloaded');
 
 	// Create a new vault
 	await page.getByRole('button', { name: 'Create New Vault' }).click();
