@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { changeVaultPassword } from '$lib/services/vaults';
+	import { changeVaultPassword, exportVault } from '$lib/services/vaults';
+	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
 	import Button from './ui/button/button.svelte';
-	import { XIcon, CheckIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import { XIcon, CheckIcon, EyeIcon, EyeOffIcon, Download } from 'lucide-svelte';
 
 	interface Props {
 		vaultId: string;
@@ -27,6 +28,12 @@
 	let success = $state(false);
 	let countdown = $state(3);
 	let countdownTimer: ReturnType<typeof setInterval> | null = null;
+
+	// Export state
+	let exporting = $state(false);
+	let exportPassword = $state('');
+	let showExportPassword = $state(false);
+	let exportError = $state<string | null>(null);
 
 	// Password strength calculation
 	let passwordStrength = $derived.by(() => {
@@ -115,6 +122,34 @@
 		}
 	}
 
+	async function handleExportVault() {
+		if (!exportPassword) return;
+
+		exporting = true;
+		exportError = null;
+
+		try {
+			const blob = await exportVault(vaultId, exportPassword);
+			const filename = generateExportFilename(vaultName);
+			downloadBlob(blob, filename);
+
+			// Clear password and show success
+			exportPassword = '';
+			exportError = null;
+		} catch (err) {
+			console.error('Failed to export vault:', err);
+			const errorMessage = err instanceof Error ? err.message : 'Failed to export vault';
+
+			if (errorMessage.includes('Invalid password')) {
+				exportError = 'Incorrect password';
+			} else {
+				exportError = errorMessage;
+			}
+		} finally {
+			exporting = false;
+		}
+	}
+
 	onDestroy(() => {
 		// Clean up countdown timer if component unmounts
 		if (countdownTimer) {
@@ -141,6 +176,63 @@
 			<div class="rounded-lg bg-muted/50 p-3 text-sm">
 				<p class="mb-1 font-medium">Current Vault: {vaultName}</p>
 			</div>
+
+			<!-- Export Vault Section -->
+			<div class="space-y-4">
+				<h3 class="text-lg font-semibold">Export Vault</h3>
+				<p class="text-sm text-muted-foreground">
+					Download a backup of your vault. All data remains encrypted.
+				</p>
+
+				{#if exportError}
+					<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+						<p>{exportError}</p>
+					</div>
+				{/if}
+
+				<div class="space-y-2">
+					<label for="export-password" class="text-sm font-medium">Confirm Password</label>
+					<div class="relative">
+						<input
+							id="export-password"
+							type={showExportPassword ? 'text' : 'password'}
+							bind:value={exportPassword}
+							placeholder="Enter password to export"
+							disabled={exporting}
+							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+						/>
+						<button
+							type="button"
+							onclick={() => (showExportPassword = !showExportPassword)}
+							class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+							tabindex="-1"
+						>
+							{#if showExportPassword}
+								<EyeOffIcon class="h-4 w-4" />
+							{:else}
+								<EyeIcon class="h-4 w-4" />
+							{/if}
+						</button>
+					</div>
+				</div>
+
+				<Button
+					onclick={handleExportVault}
+					disabled={!exportPassword || exporting}
+					variant="outline"
+					class="w-full"
+				>
+					{#if exporting}
+						<div class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
+						Exporting...
+					{:else}
+						<Download class="mr-2 h-4 w-4" />
+						Export Vault
+					{/if}
+				</Button>
+			</div>
+
+			<div class="border-t border-border"></div>
 
 			{#if error}
 				<div class="space-y-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">

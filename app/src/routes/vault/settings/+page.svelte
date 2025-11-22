@@ -4,7 +4,8 @@
 	import { resolve } from '$app/paths';
 	import { activeVault, lockVault } from '$lib/stores/vault';
 	import { getActiveDatabase } from '$lib/stores/notes';
-	import { changeVaultPassword, deleteVault } from '$lib/services/vaults';
+	import { changeVaultPassword, deleteVault, exportVault } from '$lib/services/vaults';
+	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import {
 		ArrowLeftIcon,
@@ -14,7 +15,8 @@
 		XIcon,
 		InfoIcon,
 		ShieldIcon,
-		TrashIcon
+		TrashIcon,
+		Download
 	} from 'lucide-svelte';
 
 	let noteCount = $state(0);
@@ -22,6 +24,12 @@
 	let showDeleteConfirm = $state(false);
 	let deleteConfirmText = $state('');
 	let deleting = $state(false);
+
+	// Export state
+	let exporting = $state(false);
+	let exportPassword = $state('');
+	let showExportPassword = $state(false);
+	let exportError = $state<string | null>(null);
 
 	// Password change state
 	let currentPassword = $state('');
@@ -153,6 +161,34 @@
 		}
 	}
 
+	async function handleExportVault() {
+		if (!exportPassword || !$activeVault) return;
+
+		exporting = true;
+		exportError = null;
+
+		try {
+			const blob = await exportVault($activeVault.id, exportPassword);
+			const filename = generateExportFilename($activeVault.name);
+			downloadBlob(blob, filename);
+
+			// Clear password and show success
+			exportPassword = '';
+			exportError = null;
+		} catch (err) {
+			console.error('Failed to export vault:', err);
+			const errorMessage = err instanceof Error ? err.message : 'Failed to export vault';
+
+			if (errorMessage.includes('Invalid password')) {
+				exportError = 'Incorrect password';
+			} else {
+				exportError = errorMessage;
+			}
+		} finally {
+			exporting = false;
+		}
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && showPasswordForm && isPasswordFormValid && !changing) {
 			handleChangePassword();
@@ -224,6 +260,73 @@
 						<div class="border-t border-border pt-3">
 							<p class="text-sm text-muted-foreground">Notes</p>
 							<p class="font-medium">{noteCount} {noteCount === 1 ? 'note' : 'notes'}</p>
+						</div>
+					</div>
+				</section>
+
+				<!-- Backup Section -->
+				<section class="space-y-4">
+					<div class="flex items-center gap-2">
+						<Download class="h-5 w-5 text-primary" />
+						<h2 class="text-2xl font-bold">Backup</h2>
+					</div>
+
+					<div class="rounded-lg bg-muted/50 p-6">
+						<div class="space-y-4">
+							<div>
+								<h3 class="mb-1 text-lg font-semibold">Export Vault</h3>
+								<p class="text-sm text-muted-foreground">
+									Download a backup of your vault. All data remains encrypted.
+								</p>
+							</div>
+
+							{#if exportError}
+								<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+									<p>{exportError}</p>
+								</div>
+							{/if}
+
+							<div class="space-y-2">
+								<label for="export-password" class="text-sm font-medium">Confirm Password</label>
+								<div class="relative">
+									<input
+										id="export-password"
+										type={showExportPassword ? 'text' : 'password'}
+										bind:value={exportPassword}
+										placeholder="Enter password to export"
+										disabled={exporting}
+										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+									/>
+									<button
+										type="button"
+										onclick={() => (showExportPassword = !showExportPassword)}
+										class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+										tabindex="-1"
+									>
+										{#if showExportPassword}
+											<EyeOffIcon class="h-4 w-4" />
+										{:else}
+											<EyeIcon class="h-4 w-4" />
+										{/if}
+									</button>
+								</div>
+							</div>
+
+							<Button
+								onclick={handleExportVault}
+								disabled={!exportPassword || exporting}
+								variant="outline"
+							>
+								{#if exporting}
+									<div
+										class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
+									></div>
+									Exporting...
+								{:else}
+									<Download class="mr-2 h-4 w-4" />
+									Export Vault
+								{/if}
+							</Button>
 						</div>
 					</div>
 				</section>

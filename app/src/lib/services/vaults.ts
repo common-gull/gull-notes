@@ -388,3 +388,82 @@ export async function changeVaultPassword(
 		throw error;
 	}
 }
+
+/**
+ * Export a vault to a Blob file
+ * @param vaultId Vault database name
+ * @param password User password to verify access
+ * @returns Blob containing the exported vault data
+ */
+export async function exportVault(vaultId: string, password: string): Promise<Blob> {
+	// Verify password by opening the vault
+	const db = await openVault(vaultId, password);
+
+	try {
+		// Dynamically import dexie-export-import (browser-only)
+		const { exportDB } = await import('dexie-export-import');
+		// Export the entire database using dexie-export-import
+		const blob = await exportDB(db);
+		return blob;
+	} finally {
+		// Always close the database
+		db.close();
+	}
+}
+
+/**
+ * Import a vault from a Blob file
+ * @param blob Blob containing the exported vault data
+ * @param password User password to unlock the vault
+ * @param newVaultName Optional custom name for the imported vault
+ * @returns New vault ID (database name)
+ */
+export async function importVault(
+	blob: Blob,
+	password: string,
+	newVaultName?: string
+): Promise<string> {
+	// Dynamically import dexie-export-import (browser-only)
+	const { importDB } = await import('dexie-export-import');
+
+	// Generate a new unique vault ID to avoid conflicts
+	const newVaultId = `vault_${crypto.randomUUID()}`;
+
+	// Import directly with the new vault ID (efficient - no copying needed)
+	await importDB(blob, { name: newVaultId });
+
+	// Verify the password works on the imported vault
+	let db: NotesDatabase;
+	try {
+		db = await openVault(newVaultId, password);
+	} catch (error) {
+		// Password verification failed - delete the imported vault
+		await deleteVault(newVaultId);
+		throw error;
+	}
+
+	// Password is correct - now update metadata if needed
+	try {
+		if (newVaultName) {
+			const metadataRecord = await db.settings.get('vault_metadata');
+			if (metadataRecord?.data) {
+				const metadata = metadataRecord.data as VaultMetadata;
+				await db.settings.put({
+					id: 'vault_metadata',
+					data: {
+						...metadata,
+						name: newVaultName
+					} as VaultMetadata
+				});
+			}
+		}
+
+		db.close();
+		return newVaultId;
+	} catch (error) {
+		// Metadata update failed - close the database but keep the vault
+		db.close();
+		// Re-throw the error but don't delete the vault since password was correct
+		throw error;
+	}
+}
