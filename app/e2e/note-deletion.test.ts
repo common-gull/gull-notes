@@ -25,9 +25,12 @@ async function clearIndexedDB(page) {
 
 // Helper to create a vault and get to the main notes view
 async function createVaultAndLogin(page, vaultName = 'Test Vault', password = 'TestPassword123!') {
+	// Navigate first, then clear, then reload
 	await page.goto('http://localhost:4173/');
+	await page.waitForLoadState('domcontentloaded');
 	await clearIndexedDB(page);
 	await page.reload();
+	await page.waitForLoadState('domcontentloaded');
 
 	// Create a new vault
 	await page.getByRole('button', { name: 'Create New Vault' }).click();

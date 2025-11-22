@@ -114,8 +114,9 @@ test.describe('Title and Tag Editing', () => {
 		await createNoteButton.click();
 		await page.waitForTimeout(1000);
 
-		// Click on Tags button in the note header
-		const tagsButton = page.getByRole('button', { name: /Tags/i });
+		// Click on Tags button in the note header (not the sidebar filter)
+		const noteHeader = page.locator('div.border-b');
+		const tagsButton = noteHeader.getByRole('button', { name: 'Tags', exact: true });
 		await expect(tagsButton).toBeVisible({ timeout: 5000 });
 		await tagsButton.click();
 
@@ -175,7 +176,8 @@ test.describe('Title and Tag Editing', () => {
 		await createNoteButton.click();
 		await page.waitForTimeout(1000);
 
-		const tagsButton = page.getByRole('button', { name: /Tags/i });
+		const noteHeaderLoc = page.locator('div.border-b');
+		const tagsButton = noteHeaderLoc.getByRole('button', { name: 'Tags', exact: true });
 		await tagsButton.click();
 		await expect(page.getByRole('heading', { name: 'Manage Tags' })).toBeVisible({ timeout: 2000 });
 
@@ -250,7 +252,7 @@ test.describe('Title and Tag Editing', () => {
 		await titleInput.press('Enter');
 
 		// Add tags
-		await page.getByRole('button', { name: /Tags/i }).click();
+		await noteHeader.getByRole('button', { name: 'Tags', exact: true }).click();
 		const tagInput = page.locator('input#tag-input');
 		await tagInput.fill('personal');
 		await tagInput.press('Enter');
