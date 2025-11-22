@@ -23,7 +23,7 @@
 	{/if}
 
 	<div class="flex items-center gap-2">
-		<h1 class="text-xl font-semibold">Secure Notes</h1>
+		<h1 class="text-xl font-semibold">Gull Notes</h1>
 		{#if vaultName}
 			<span class="text-sm text-muted-foreground">• {vaultName}</span>
 		{/if}

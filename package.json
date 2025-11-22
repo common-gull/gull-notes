@@ -1,6 +1,6 @@
 {
-  "name": "web-notes",
-  "version": "1.0.0",
+  "name": "gull-notes",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {

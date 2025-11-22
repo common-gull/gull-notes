@@ -6,6 +6,7 @@
 </script>
 
 <svelte:head>
+	<title>Gull Notes</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 

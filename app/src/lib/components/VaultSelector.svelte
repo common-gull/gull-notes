@@ -39,7 +39,8 @@
 <div class="fixed inset-0 z-50 bg-background flex items-center justify-center p-4">
 	<div class="w-full max-w-2xl">
 		<div class="text-center mb-8">
-			<h1 class="text-4xl font-bold mb-2">Select a Vault</h1>
+			<h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Gull Notes</h1>
+			<h2 class="text-3xl font-semibold mb-2">Select a Vault</h2>
 			<p class="text-muted-foreground">
 				Choose a vault to unlock, or create a new one
 			</p>
