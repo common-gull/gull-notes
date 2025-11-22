@@ -11,6 +11,7 @@
 
 	let isMobile = $state(false);
 	let mobileMenuOpen = $state(false);
+	let sidebarCollapsed = $state(false);
 
 	function handleResize() {
 		isMobile = window.innerWidth < 768;
@@ -18,6 +19,10 @@
 
 	function toggleMobileMenu() {
 		mobileMenuOpen = !mobileMenuOpen;
+	}
+
+	function toggleSidebar() {
+		sidebarCollapsed = !sidebarCollapsed;
 	}
 
 	// Routes that don't require an unlocked vault
@@ -54,6 +59,8 @@
 		<TitleBar
 			onMenuClick={toggleMobileMenu}
 			showMenuButton={isMobile}
+			onToggleSidebar={toggleSidebar}
+			{sidebarCollapsed}
 			vaultName={$activeVault.name}
 		/>
 
@@ -67,7 +74,7 @@
 				/>
 			{:else}
 				<!-- Desktop: Fixed sidebar -->
-				<Sidebar {isMobile} />
+				<Sidebar {isMobile} collapsed={sidebarCollapsed} />
 			{/if}
 
 			<!-- Main content area -->

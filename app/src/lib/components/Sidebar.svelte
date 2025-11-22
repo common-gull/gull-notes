@@ -23,9 +23,10 @@
 		isMobile?: boolean;
 		open?: boolean;
 		onOpenChange?: (open: boolean) => void;
+		collapsed?: boolean;
 	}
 
-	let { isMobile = false, open = false, onOpenChange }: Props = $props();
+	let { isMobile = false, open = false, onOpenChange, collapsed = false }: Props = $props();
 
 	async function createNewNote() {
 		const db = getActiveDatabase();
@@ -126,7 +127,11 @@
 		</Sheet.Content>
 	</Sheet.Root>
 {:else}
-	<aside class="flex h-full w-[280px] flex-col border-r border-sidebar-border bg-sidebar">
+	<aside
+		class="flex h-full flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 {collapsed
+			? 'w-0 overflow-hidden'
+			: 'w-[280px]'}"
+	>
 		<div class="flex items-center justify-between p-4">
 			<h2 class="text-lg font-semibold">Notes</h2>
 			<Button size="sm" onclick={createNewNote}>

@@ -3,17 +3,25 @@
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Menu, Search, Lock, Settings } from 'lucide-svelte';
+	import { Menu, Search, Lock, Settings, PanelLeftClose, PanelLeft } from 'lucide-svelte';
 	import { searchQuery } from '$lib/stores/notes';
 	import { lockVault } from '$lib/stores/vault';
 
 	interface Props {
 		onMenuClick?: () => void;
 		showMenuButton?: boolean;
+		onToggleSidebar?: () => void;
+		sidebarCollapsed?: boolean;
 		vaultName?: string;
 	}
 
-	let { onMenuClick, showMenuButton = false, vaultName }: Props = $props();
+	let {
+		onMenuClick,
+		showMenuButton = false,
+		onToggleSidebar,
+		sidebarCollapsed = false,
+		vaultName
+	}: Props = $props();
 
 	async function handleLock() {
 		lockVault();
@@ -29,6 +37,19 @@
 	{#if showMenuButton}
 		<Button variant="ghost" size="icon" onclick={onMenuClick}>
 			<Menu class="h-5 w-5" />
+		</Button>
+	{:else if onToggleSidebar}
+		<Button
+			variant="ghost"
+			size="icon"
+			onclick={onToggleSidebar}
+			title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+		>
+			{#if sidebarCollapsed}
+				<PanelLeft class="h-5 w-5" />
+			{:else}
+				<PanelLeftClose class="h-5 w-5" />
+			{/if}
 		</Button>
 	{/if}
 
