@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { FileText, Plus, Loader2 } from 'lucide-svelte';
-	import { db } from '$lib/db';
-	import { selectedNoteId, notesLoading } from '$lib/stores/notes';
+	import { selectedNoteId, notesLoading, getActiveDatabase } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 
 	async function createFirstNote() {
+		const db = getActiveDatabase();
+		if (!db) {
+			console.error('No active database');
+			return;
+		}
+
 		const key = sessionKeyManager.getKey();
 		if (!key) {
 			console.error('No encryption key available');
@@ -23,7 +28,7 @@
 		};
 
 		const content: DecryptedContent = {
-			body: '<h1>Welcome to Secure Notes!</h1><p>Start writing your thoughts securely.</p>'
+			body: '<h1>Welcome to Gull Notes!</h1><p>Start writing your thoughts securely.</p>'
 		};
 
 		const metaEncrypted = await encryptData(metadata, key);

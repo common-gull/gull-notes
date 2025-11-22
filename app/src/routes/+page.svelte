@@ -8,7 +8,7 @@
 	import PasswordPrompt from '$lib/components/PasswordPrompt.svelte';
 	import CreateVaultDialog from '$lib/components/CreateVaultDialog.svelte';
 	import SettingsDialog from '$lib/components/SettingsDialog.svelte';
-	import { filteredNotes, notesLoading, setActiveDatabase, setupDatabaseHooks } from '$lib/stores/notes';
+	import { filteredNotes, notesLoading, setActiveDatabase, setupDatabaseHooks, selectedNoteId } from '$lib/stores/notes';
 	import { getVaultMetadata } from '$lib/services/vaults';
 	import { sessionKeyManager } from '$lib/services/encryption';
 	import type { NotesDatabase } from '$lib/db';
@@ -119,6 +119,12 @@
 		}
 	}
 
+	$effect(() => {
+		if (!$notesLoading && $filteredNotes.length > 0 && !$selectedNoteId) {
+			selectedNoteId.set($filteredNotes[0].id);
+		}
+	});
+
 	onMount(() => {
 		// Set initial mobile state
 		handleResize();
@@ -164,9 +170,7 @@
 
 			<!-- Main content area -->
 			<main class="flex-1 overflow-hidden">
-				{#if $notesLoading}
-					<EmptyState />
-				{:else if $filteredNotes.length > 0}
+				{#if $filteredNotes.length > 0 && $selectedNoteId}
 					<TipTapEditor />
 				{:else}
 					<EmptyState />
