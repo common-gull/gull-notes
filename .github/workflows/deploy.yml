@@ -84,5 +84,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: ./app
-          command: pages deploy
+          command: pages deploy .svelte-kit/cloudflare --project-name gull-notes
