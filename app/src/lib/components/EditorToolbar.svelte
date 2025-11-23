@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
+	import LinkDialog from './LinkDialog.svelte';
 	import {
 		Bold,
 		Italic,
 		Code,
+		Strikethrough,
+		Underline,
+		Link,
 		Heading1,
 		Heading2,
 		List,
@@ -20,6 +24,25 @@
 	}
 
 	let { editor }: Props = $props();
+
+	let showLinkDialog = $state(false);
+	let currentLinkUrl = $state('');
+
+	function openLinkDialog() {
+		if (!editor) return;
+		currentLinkUrl = editor.getAttributes('link').href || '';
+		showLinkDialog = true;
+	}
+
+	function handleLinkSubmit(url: string) {
+		if (!editor) return;
+		editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+	}
+
+	function handleLinkRemove() {
+		if (!editor) return;
+		editor.chain().focus().extendMarkRange('link').unsetLink().run();
+	}
 </script>
 
 {#if editor}
@@ -42,6 +65,35 @@
 			disabled={!editor.can().chain().focus().toggleItalic().run()}
 		>
 			<Italic class="h-4 w-4" />
+		</Button>
+
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={() => editor.chain().focus().toggleStrike().run()}
+			class={editor.isActive('strike') ? 'bg-accent' : ''}
+			disabled={!editor.can().chain().focus().toggleStrike().run()}
+		>
+			<Strikethrough class="h-4 w-4" />
+		</Button>
+
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={() => editor.chain().focus().toggleUnderline().run()}
+			class={editor.isActive('underline') ? 'bg-accent' : ''}
+			disabled={!editor.can().chain().focus().toggleUnderline().run()}
+		>
+			<Underline class="h-4 w-4" />
+		</Button>
+
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={openLinkDialog}
+			class={editor.isActive('link') ? 'bg-accent' : ''}
+		>
+			<Link class="h-4 w-4" />
 		</Button>
 
 		<Button
@@ -123,4 +175,12 @@
 			<Redo class="h-4 w-4" />
 		</Button>
 	</div>
+
+	<LinkDialog
+		bind:open={showLinkDialog}
+		initialUrl={currentLinkUrl}
+		onClose={() => (showLinkDialog = false)}
+		onSubmit={handleLinkSubmit}
+		onRemove={handleLinkRemove}
+	/>
 {/if}

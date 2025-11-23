@@ -6,6 +6,8 @@
 	import EditorToolbar from './EditorToolbar.svelte';
 	import EditorSkeleton from './EditorSkeleton.svelte';
 	import NoteHeader from './NoteHeader.svelte';
+	import LinkContextMenu from './LinkContextMenu.svelte';
+	import LinkDialog from './LinkDialog.svelte';
 	import {
 		selectedNoteId,
 		loadNoteContent,
@@ -16,6 +18,7 @@
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
 	import Image from '@tiptap/extension-image';
 	import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
+	import { Markdown } from '@tiptap/markdown';
 
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
@@ -25,6 +28,15 @@
 	let loadingNote = $state<boolean>(false);
 	let loadingPromise: Promise<void> | null = null;
 	let lastContentHash = $state<string>('');
+
+	// Link context menu state
+	let showLinkContextMenu = $state(false);
+	let linkContextMenuPosition = $state({ x: 0, y: 0 });
+	let contextLinkUrl = $state('');
+
+	// Link dialog state
+	let showLinkDialog = $state(false);
+	let linkDialogUrl = $state('');
 
 	// Watch for metadata changes from the store
 	$effect(() => {
@@ -201,13 +213,49 @@
 		}, 500);
 	}
 
+	function handleLinkClick(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		// Check if the clicked element is a link or is inside a link
+		const linkElement = target.closest('a');
+		if (linkElement) {
+			event.preventDefault();
+			event.stopPropagation();
+			const url = linkElement.getAttribute('href');
+			if (url) {
+				contextLinkUrl = url;
+				linkContextMenuPosition = { x: event.clientX, y: event.clientY };
+				showLinkContextMenu = true;
+			}
+		}
+	}
+
+	function handleEditLink() {
+		linkDialogUrl = contextLinkUrl;
+		showLinkDialog = true;
+	}
+
+	function handleRemoveLink() {
+		if (!editorState.editor) return;
+		// Find and remove the link
+		editorState.editor.chain().focus().extendMarkRange('link').unsetLink().run();
+	}
+
+	function handleLinkSubmit(url: string) {
+		if (!editorState.editor) return;
+		editorState.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+	}
+
 	onMount(() => {
 		if (!element) return;
 
 		editorState.editor = new Editor({
 			element: element,
 			extensions: [
-				StarterKit,
+				StarterKit.configure({
+					link: {
+						openOnClick: false
+					}
+				}),
 				Image.configure({
 					inline: true,
 					allowBase64: true
@@ -215,7 +263,8 @@
 				Emoji.configure({
 					emojis: gitHubEmojis,
 					enableEmoticons: true
-				})
+				}),
+				Markdown
 			],
 			content: '<p>Select or create a note to start editing</p>',
 			onTransaction: () => {
@@ -316,6 +365,9 @@
 			role="textbox"
 			tabindex="-1"
 			onclick={(e) => {
+				// Handle link clicks
+				handleLinkClick(e);
+
 				// Focus editor when clicking anywhere in the container
 				if (editorState.editor && !editorState.editor.isFocused) {
 					// Check if click is on the container or prose wrapper, not on actual content
@@ -344,6 +396,23 @@
 			<div bind:this={element} class="prose prose-sm min-h-full max-w-none p-6"></div>
 		</div>
 	</div>
+
+	<LinkContextMenu
+		bind:open={showLinkContextMenu}
+		url={contextLinkUrl}
+		position={linkContextMenuPosition}
+		onClose={() => (showLinkContextMenu = false)}
+		onEdit={handleEditLink}
+		onRemove={handleRemoveLink}
+	/>
+
+	<LinkDialog
+		bind:open={showLinkDialog}
+		initialUrl={linkDialogUrl}
+		onClose={() => (showLinkDialog = false)}
+		onSubmit={handleLinkSubmit}
+		onRemove={handleRemoveLink}
+	/>
 </div>
 
 <style>
@@ -394,6 +463,22 @@
 		margin: 0 0.05em;
 		vertical-align: -0.28em;
 		border-radius: 0;
+	}
+
+	/* Link styles */
+	:global(.ProseMirror a) {
+		color: var(--color-primary);
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	:global(.ProseMirror a:hover) {
+		text-decoration: none;
+	}
+
+	/* Underline styles */
+	:global(.ProseMirror u) {
+		text-decoration: underline;
 	}
 
 	/* Reduce excessive spacing in lists */

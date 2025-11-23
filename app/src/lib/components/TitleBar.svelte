@@ -11,7 +11,7 @@
 		PanelLeft,
 		Sun,
 		Moon,
-		MoreVertical
+		EllipsisVertical
 	} from 'lucide-svelte';
 	import { lockVault } from '$lib/stores/vault';
 	import { theme, getResolvedTheme } from '$lib/stores/theme';
@@ -82,7 +82,7 @@
 				<DropdownMenu.Trigger>
 					{#snippet child({ props })}
 						<Button variant="ghost" size="icon" {...props}>
-							<MoreVertical class="h-5 w-5" />
+							<EllipsisVertical class="h-5 w-5" />
 						</Button>
 					{/snippet}
 				</DropdownMenu.Trigger>
