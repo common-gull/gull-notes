@@ -19,6 +19,7 @@
 	import Image from '@tiptap/extension-image';
 	import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 	import { Markdown } from '@tiptap/markdown';
+	import { PasteMarkdown } from '$lib/extensions/paste-markdown';
 
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
@@ -264,7 +265,10 @@
 					emojis: gitHubEmojis,
 					enableEmoticons: true
 				}),
-				Markdown
+				Markdown,
+				PasteMarkdown.configure({
+					getEditor: () => editorState.editor
+				})
 			],
 			content: '<p>Select or create a note to start editing</p>',
 			onTransaction: () => {
