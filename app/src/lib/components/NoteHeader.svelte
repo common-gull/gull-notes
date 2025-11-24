@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { Button } from './ui/button';
-	import { TagIcon, MoreVerticalIcon, Trash2Icon } from 'lucide-svelte';
+	import { TagIcon, MoreVerticalIcon, Trash2Icon, Copy } from 'lucide-svelte';
 	import * as DropdownMenu from './ui/dropdown-menu';
 	import TagEditorDialog from './TagEditorDialog.svelte';
 	import DeleteNoteDialog from './DeleteNoteDialog.svelte';
 	import { updateNoteMetadata, deleteNote, selectedNoteId } from '$lib/stores/notes';
 	import type { DecryptedMetadata } from '$lib/types';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		noteId: string;
 		metadata: DecryptedMetadata;
+		getMarkdown?: () => string;
 	}
 
-	let { noteId, metadata }: Props = $props();
+	let { noteId, metadata, getMarkdown }: Props = $props();
 
 	let isEditingTitle = $state(false);
 	let showTagDialog = $state(false);
@@ -89,6 +91,30 @@
 			console.error('Failed to delete note:', error);
 		}
 	}
+
+	async function handleCopyAsMarkdown() {
+		if (!getMarkdown) {
+			toast.error('Copy function not available');
+			return;
+		}
+
+		try {
+			// Get markdown content
+			const markdown = getMarkdown();
+
+			// Include title as heading at the top
+			const noteTitle = metadata.title || 'Untitled Note';
+			const fullMarkdown = `# ${noteTitle}\n\n${markdown}`;
+
+			// Copy to clipboard
+			await navigator.clipboard.writeText(fullMarkdown);
+
+			toast.success('Note copied as markdown');
+		} catch (error) {
+			console.error('Failed to copy note as markdown:', error);
+			toast.error('Failed to copy note');
+		}
+	}
 </script>
 
 <div class="border-b border-border bg-background px-6 py-3">
@@ -147,6 +173,10 @@
 					{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
+					<DropdownMenu.Item onclick={handleCopyAsMarkdown}>
+						<Copy class="mr-2 h-4 w-4" />
+						Copy as Markdown
+					</DropdownMenu.Item>
 					<DropdownMenu.Item
 						onclick={() => (showDeleteDialog = true)}
 						class="text-destructive focus:text-destructive"

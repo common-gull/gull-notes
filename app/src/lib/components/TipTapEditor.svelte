@@ -368,7 +368,11 @@
 
 	<div class="flex h-full flex-col" class:opacity-0={loadingNote}>
 		{#if currentNoteId && currentMetadata}
-			<NoteHeader noteId={currentNoteId} metadata={currentMetadata} />
+			<NoteHeader
+				noteId={currentNoteId}
+				metadata={currentMetadata}
+				getMarkdown={() => editorState.editor?.getMarkdown() ?? ''}
+			/>
 		{/if}
 		<EditorToolbar editor={editorState.editor} />
 		<div

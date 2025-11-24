@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { theme, getResolvedTheme, watchSystemTheme } from '$lib/stores/theme';
 	import { browser } from '$app/environment';
+	import { Toaster } from '$lib/components/ui/sonner';
 
 	let { children } = $props();
 
@@ -37,5 +38,7 @@
 	<title>Gull Notes</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<Toaster />
 
 {@render children()}
