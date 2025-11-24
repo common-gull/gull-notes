@@ -7,7 +7,8 @@ import {
 	decryptDataKey,
 	storeEncryptedDataKey,
 	retrieveEncryptedDataKey,
-	sessionKeyManager
+	sessionKeyManager,
+	SALT_SIZE
 } from './encryption';
 
 /**
@@ -63,7 +64,7 @@ export async function createVault(vaultName: string, password: string): Promise<
 	const vaultId = `vault_${crypto.randomUUID()}`;
 
 	// Generate random salt for password derivation
-	const salt = crypto.getRandomValues(new Uint8Array(16));
+	const salt = crypto.getRandomValues(new Uint8Array(SALT_SIZE));
 
 	// Derive master key from password
 	const masterKey = await deriveMasterKey(password, salt);
@@ -230,7 +231,7 @@ export async function changeVaultPassword(
 		const newDataKey = await generateDataKey();
 
 		// Generate new salt and derive new master key
-		const newSalt = crypto.getRandomValues(new Uint8Array(16));
+		const newSalt = crypto.getRandomValues(new Uint8Array(SALT_SIZE));
 		const newMasterKey = await deriveMasterKey(newPassword, newSalt);
 
 		// Encrypt new data key with new master key
