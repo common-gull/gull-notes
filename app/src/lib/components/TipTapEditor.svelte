@@ -22,6 +22,8 @@
 	import { PasteMarkdown } from '$lib/extensions/paste-markdown';
 	import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 	import { all, createLowlight } from 'lowlight';
+	import TaskList from '@tiptap/extension-task-list';
+	import TaskItem from '@tiptap/extension-task-item';
 
 	const lowlight = createLowlight(all);
 	let element = $state<HTMLElement>();
@@ -272,6 +274,10 @@
 					emojis: gitHubEmojis,
 					enableEmoticons: true
 				}),
+				TaskList,
+				TaskItem.configure({
+					nested: true
+				}),
 				Markdown,
 				PasteMarkdown.configure({
 					getEditor: () => editorState.editor
@@ -513,6 +519,45 @@
 	:global(.ProseMirror ol li p) {
 		margin-top: 0;
 		margin-bottom: 0;
+	}
+
+	/* Task list styles */
+	:global(.ProseMirror ul[data-type='taskList']) {
+		list-style: none;
+		padding-left: 0;
+	}
+
+	:global(.ProseMirror ul[data-type='taskList'] li) {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+
+	:global(.ProseMirror ul[data-type='taskList'] li > label) {
+		flex-shrink: 0;
+		margin-top: 0.15rem;
+		user-select: none;
+	}
+
+	:global(.ProseMirror ul[data-type='taskList'] li > label input[type='checkbox']) {
+		width: 1rem;
+		height: 1rem;
+		cursor: pointer;
+		accent-color: var(--color-primary);
+	}
+
+	:global(.ProseMirror ul[data-type='taskList'] li > div) {
+		flex: 1;
+	}
+
+	:global(.ProseMirror ul[data-type='taskList'] li > div > p) {
+		margin: 0;
+	}
+
+	/* Nested task lists */
+	:global(.ProseMirror ul[data-type='taskList'] ul[data-type='taskList']) {
+		margin-top: 0.25rem;
+		margin-left: 1.5rem;
 	}
 
 	/* Inline code styles - aligned with code blocks */

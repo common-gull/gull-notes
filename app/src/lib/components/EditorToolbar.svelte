@@ -13,6 +13,7 @@
 		Heading2,
 		List,
 		ListOrdered,
+		ListTodo,
 		Quote,
 		Undo,
 		Redo
@@ -144,6 +145,15 @@
 			class={editor.isActive('orderedList') ? 'bg-accent' : ''}
 		>
 			<ListOrdered class="h-4 w-4" />
+		</Button>
+
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={() => editor.chain().focus().toggleTaskList().run()}
+			class={editor.isActive('taskList') ? 'bg-accent' : ''}
+		>
+			<ListTodo class="h-4 w-4" />
 		</Button>
 
 		<Button

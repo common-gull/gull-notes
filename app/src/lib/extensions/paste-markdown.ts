@@ -12,6 +12,7 @@ function looksLikeMarkdown(text: string): boolean {
 		/\[.+?\]\(.+?\)/.test(text) || // Links
 		/^[-*+]\s/m.test(text) || // Unordered lists
 		/^\d+\.\s/m.test(text) || // Ordered lists
+		/^[-*+]\s\[[ xX]\](\s|$)/m.test(text) || // Task lists
 		/^>\s/m.test(text) || // Blockquotes
 		/`[^`]+`/.test(text) || // Inline code
 		/```[\s\S]*?```/.test(text) || // Code blocks
@@ -136,8 +137,24 @@ export const PasteMarkdown = Extension.create<PasteMarkdownOptions>({
 								.map((para) => {
 									if (!para.trim()) return '';
 
-									// Check if this is an unordered list (all non-empty lines start with -, *, or +)
+									// Check if this is a task list (all non-empty lines start with - [ ] or - [x])
 									const lines = para.split('\n').filter((line) => line.trim());
+									if (
+										lines.length > 0 &&
+										lines.every((line) => /^[-*+]\s\[[ xX]\](\s|$)/.test(line.trim()))
+									) {
+										const listItems = lines
+											.map((line) => {
+												const checked = /^[-*+]\s\[([xX])\](\s|$)/.test(line.trim());
+												const content = line.replace(/^[-*+]\s\[[ xX]\]\s*/, '');
+												const processed = processInlineMarkdown(content, inlineCodes);
+												return `<li data-type="taskItem" data-checked="${checked}"><label><input type="checkbox" ${checked ? 'checked' : ''}></label><div><p>${processed}</p></div></li>`;
+											})
+											.join('');
+										return `<ul data-type="taskList">${listItems}</ul>`;
+									}
+
+									// Check if this is an unordered list (all non-empty lines start with -, *, or +)
 									if (lines.length > 0 && lines.every((line) => /^[-*+]\s/.test(line.trim()))) {
 										const listItems = lines
 											.map((line) => {

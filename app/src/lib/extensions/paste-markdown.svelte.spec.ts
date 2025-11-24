@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import { PasteMarkdown } from './paste-markdown';
 
 describe('PasteMarkdown Extension', () => {
@@ -16,6 +18,10 @@ describe('PasteMarkdown Extension', () => {
 			element: container,
 			extensions: [
 				StarterKit,
+				TaskList,
+				TaskItem.configure({
+					nested: true
+				}),
 				PasteMarkdown.configure({
 					getEditor: () => editor
 				})
@@ -109,6 +115,93 @@ describe('PasteMarkdown Extension', () => {
 			);
 		});
 
+		it('should convert task lists with unchecked items', () => {
+			const markdown = `- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task 1</p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task 2</p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task 3</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should convert task lists with checked items', () => {
+			const markdown = `- [x] Completed task
+- [X] Also completed`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Completed task</p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Also completed</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should convert task lists with mixed checked/unchecked items', () => {
+			const markdown = `- [x] Done
+- [ ] Todo
+- [X] Also done
+- [ ] Another todo`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Done</p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Todo</p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Also done</p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Another todo</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should handle task lists with inline formatting', () => {
+			const markdown = `- [x] **Bold** task
+- [ ] Task with *italic*
+- [ ] Task with \`code\``;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p><strong>Bold</strong> task</p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task with <em>italic</em></p></div></li>' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task with <code>code</code></p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should distinguish task lists from regular lists', () => {
+			const markdown = `- Regular item
+- Another regular item
+
+- [ ] Task item
+- [x] Completed task`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul><li><p>Regular item</p></li><li><p>Another regular item</p></li></ul>' +
+					'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task item</p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Completed task</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
 		it('should handle mixed content with proper structure', () => {
 			const markdown = `# Title
 
@@ -191,6 +284,86 @@ code();
 
 			// Should not call insertContent for non-markdown text
 			expect(spy).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('Task Lists - Edge Cases', () => {
+		it('should handle empty task list items', () => {
+			const markdown = `- [ ] 
+- [x] Has content`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p></p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Has content</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should handle task lists with special characters', () => {
+			const markdown = `- [ ] Task with <special> characters
+- [x] Task with & symbols`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			// TipTap/browser strips unknown HTML tags like <special>
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task with  characters</p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Task with &amp; symbols</p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should handle task lists with links', () => {
+			const markdown = `- [ ] Check [this link](https://example.com)
+- [x] Visited [another link](https://test.com)`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Check <a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com">this link</a></p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Visited <a target="_blank" rel="noopener noreferrer nofollow" href="https://test.com">another link</a></p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should not treat task list syntax in middle of line as task list', () => {
+			const markdown = `Text with [ ] in middle`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			// Should be treated as plain text paragraph, not a task list
+			expect(html).not.toContain('data-type="taskList"');
+			expect(html).toContain('[ ]');
+		});
+
+		it('should handle mixed list types in same paste', () => {
+			const markdown = `- Regular list item
+
+- [ ] Task item
+- [x] Done task
+
+1. Ordered item
+2. Another ordered item`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			expect(html).toBe(
+				'<ul><li><p>Regular list item</p></li></ul>' +
+					'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task item</p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Done task</p></div></li>' +
+					'</ul>' +
+					'<ol><li><p>Ordered item</p></li><li><p>Another ordered item</p></li></ol>' +
+					'<p></p>'
+			);
 		});
 	});
 
@@ -304,6 +477,36 @@ code();
 			// Code content should be escaped
 			expect(html).toContain('&lt;script&gt;');
 			expect(html).not.toContain('<script>alert');
+		});
+
+		it('should escape HTML in task list items', () => {
+			const markdown = `- [ ] Task with <script>alert(1)</script>
+- [x] Task with <img src=x onerror=alert(1)>`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			// TipTap/browser strips malicious tags and scripts
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p>Task with </p></div></li>' +
+					'<li data-checked="true" data-type="taskItem"><label><input type="checkbox" checked="checked"><span></span></label><div><p>Task with </p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
+		});
+
+		it('should escape HTML in task list with links', () => {
+			const markdown = `- [ ] [<script>alert(1)</script>](https://example.com)`;
+			simulatePaste(editor, markdown);
+			const html = editor.getHTML();
+
+			// TipTap escapes the malicious content in link text
+			expect(html).toBe(
+				'<ul data-type="taskList">' +
+					'<li data-checked="false" data-type="taskItem"><label><input type="checkbox"><span></span></label><div><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com">&lt;script&gt;alert(1)&lt;/script&gt;</a></p></div></li>' +
+					'</ul>' +
+					'<p></p>'
+			);
 		});
 	});
 });
