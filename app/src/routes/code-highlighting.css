@@ -1,0 +1,103 @@
+/* Syntax highlighting for code blocks */
+.hljs {
+	display: block;
+	overflow-x: auto;
+	padding: 0.5em;
+	background: var(--color-muted);
+	color: var(--color-foreground);
+}
+
+/* Light theme syntax highlighting */
+:root {
+	--code-comment: oklch(0.556 0 0);
+	--code-keyword: oklch(0.488 0.243 264.376);
+	--code-string: oklch(0.6 0.118 184.704);
+	--code-number: oklch(0.646 0.222 41.116);
+	--code-function: oklch(0.577 0.245 27.325);
+	--code-class: oklch(0.398 0.07 227.392);
+	--code-operator: oklch(0.708 0 0);
+}
+
+/* Dark theme syntax highlighting */
+.dark {
+	--code-comment: oklch(0.708 0 0);
+	--code-keyword: oklch(0.696 0.17 162.48);
+	--code-string: oklch(0.769 0.188 70.08);
+	--code-number: oklch(0.828 0.189 84.429);
+	--code-function: oklch(0.704 0.191 22.216);
+	--code-class: oklch(0.645 0.246 16.439);
+	--code-operator: oklch(0.922 0 0);
+}
+
+/* Syntax highlighting tokens */
+.hljs-comment,
+.hljs-quote {
+	color: var(--code-comment);
+	font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+	color: var(--code-keyword);
+	font-weight: bold;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-attribute,
+.hljs-literal,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type {
+	color: var(--code-string);
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-meta,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+	color: var(--code-number);
+}
+
+.hljs-function,
+.hljs-title.function_ {
+	color: var(--code-function);
+}
+
+.hljs-class,
+.hljs-title.class_,
+.hljs-title.class_.inherited__ {
+	color: var(--code-class);
+}
+
+.hljs-operator,
+.hljs-punctuation,
+.hljs-variable,
+.hljs-variable.language_,
+.hljs-property,
+.hljs-params {
+	color: var(--code-operator);
+}
+
+.hljs-regexp,
+.hljs-deletion {
+	color: oklch(0.577 0.245 27.325);
+}
+
+.hljs-addition {
+	color: oklch(0.6 0.118 184.704);
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}

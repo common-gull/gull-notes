@@ -20,7 +20,10 @@
 	import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 	import { Markdown } from '@tiptap/markdown';
 	import { PasteMarkdown } from '$lib/extensions/paste-markdown';
+	import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
+	import { all, createLowlight } from 'lowlight';
 
+	const lowlight = createLowlight(all);
 	let element = $state<HTMLElement>();
 	let editorState = $state<{ editor: Editor | null }>({ editor: null });
 	let currentNoteId = $state<string | null>(null);
@@ -255,7 +258,11 @@
 				StarterKit.configure({
 					link: {
 						openOnClick: false
-					}
+					},
+					codeBlock: false
+				}),
+				CodeBlockLowlight.configure({
+					lowlight
 				}),
 				Image.configure({
 					inline: true,
