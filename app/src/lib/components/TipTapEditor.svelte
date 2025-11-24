@@ -514,4 +514,34 @@
 		margin-top: 0;
 		margin-bottom: 0;
 	}
+
+	/* Inline code styles - aligned with code blocks */
+	:global(.ProseMirror code) {
+		background-color: var(--color-muted);
+		color: var(--color-foreground);
+		padding: 0.2em 0.4em;
+		border-radius: 0.375rem;
+		font-size: 0.9em;
+		font-family:
+			ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
+			Consolas, 'Liberation Mono', 'Courier New', monospace;
+		font-weight: 500;
+	}
+
+	/* Code block styles */
+	:global(.ProseMirror pre) {
+		background-color: var(--color-muted);
+		border-radius: 0.5rem;
+		padding: 1rem;
+		overflow-x: auto;
+	}
+
+	/* Ensure code blocks don't inherit inline code styles */
+	:global(.ProseMirror pre code) {
+		background-color: transparent;
+		padding: 0;
+		border-radius: 0;
+		font-size: 1em;
+		font-weight: 400;
+	}
 </style>
