@@ -16,7 +16,7 @@
 	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
-	import Image from '@tiptap/extension-image';
+	import { SpoilerImage } from '$lib/extensions/spoiler-image';
 	import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 	import { Markdown } from '@tiptap/markdown';
 	import { PasteMarkdown } from '$lib/extensions/paste-markdown';
@@ -24,6 +24,7 @@
 	import { all, createLowlight } from 'lowlight';
 	import TaskList from '@tiptap/extension-task-list';
 	import TaskItem from '@tiptap/extension-task-item';
+	import { Spoiler } from '$lib/extensions/spoiler';
 
 	const lowlight = createLowlight(all);
 	let element = $state<HTMLElement>();
@@ -266,7 +267,7 @@
 				CodeBlockLowlight.configure({
 					lowlight
 				}),
-				Image.configure({
+				SpoilerImage.configure({
 					inline: true,
 					allowBase64: true
 				}),
@@ -278,6 +279,7 @@
 				TaskItem.configure({
 					nested: true
 				}),
+				Spoiler,
 				Markdown,
 				PasteMarkdown.configure({
 					getEditor: () => editorState.editor
@@ -295,6 +297,16 @@
 				}
 			},
 			editorProps: {
+				handleClick: (view, pos, event) => {
+					const target = event.target as HTMLElement;
+					// Handle spoiler click to toggle reveal
+					if (target.hasAttribute('data-spoiler')) {
+						const isRevealed = target.getAttribute('data-revealed') === 'true';
+						target.setAttribute('data-revealed', isRevealed ? 'false' : 'true');
+						return true;
+					}
+					return false;
+				},
 				handlePaste: (view, event) => {
 					const items = event.clipboardData?.items;
 					if (!items) return false;
@@ -476,6 +488,20 @@
 		outline-offset: 2px;
 	}
 
+	/* Spoiler image styles */
+	:global(.ProseMirror img[data-spoiler='true']) {
+		filter: blur(20px) brightness(0.8);
+		transition: filter 0.3s ease;
+	}
+
+	:global(.ProseMirror img[data-spoiler='true']:hover) {
+		filter: blur(15px) brightness(0.9);
+	}
+
+	:global(.ProseMirror img[data-spoiler='true'][data-revealed='true']) {
+		filter: none;
+	}
+
 	/* Emoji extension styles - make emojis inline */
 	:global(.ProseMirror [data-type='emoji'] img) {
 		display: inline-block;
@@ -588,5 +614,36 @@
 		border-radius: 0;
 		font-size: 1em;
 		font-weight: 400;
+	}
+
+	/* Spoiler text styles */
+	:global(.ProseMirror span[data-spoiler]) {
+		position: relative;
+		border-radius: 0.25rem;
+		padding: 0 0.25rem;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	:global(.ProseMirror span[data-spoiler]::after) {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-color: var(--color-muted);
+		border-radius: 0.25rem;
+		transition: opacity 0.2s ease;
+	}
+
+	:global(.ProseMirror span[data-spoiler]:hover::after) {
+		background-color: var(--color-accent);
+	}
+
+	:global(.ProseMirror span[data-spoiler][data-revealed='true']) {
+		user-select: text;
+	}
+
+	:global(.ProseMirror span[data-spoiler][data-revealed='true']::after) {
+		opacity: 0;
+		pointer-events: none;
 	}
 </style>

@@ -16,7 +16,8 @@
 		ListTodo,
 		Quote,
 		Undo,
-		Redo
+		Redo,
+		EyeOff
 	} from 'lucide-svelte';
 	import type { Editor } from '@tiptap/core';
 
@@ -43,6 +44,29 @@
 	function handleLinkRemove() {
 		if (!editor) return;
 		editor.chain().focus().extendMarkRange('link').unsetLink().run();
+	}
+
+	function toggleSpoiler() {
+		if (!editor) return;
+		// Check if an image is selected
+		const { selection } = editor.state;
+		const node = editor.state.doc.nodeAt(selection.from);
+		if (node?.type.name === 'image') {
+			editor.chain().focus().toggleImageSpoiler().run();
+		} else {
+			editor.chain().focus().toggleSpoiler().run();
+		}
+	}
+
+	function isSpoilerActive(): boolean {
+		if (!editor) return false;
+		// Check if image with spoiler is selected
+		const { selection } = editor.state;
+		const node = editor.state.doc.nodeAt(selection.from);
+		if (node?.type.name === 'image') {
+			return node.attrs['data-spoiler'] === 'true';
+		}
+		return editor.isActive('spoiler');
 	}
 </script>
 
@@ -105,6 +129,16 @@
 			disabled={!editor.can().chain().focus().toggleCode().run()}
 		>
 			<Code class="h-4 w-4" />
+		</Button>
+
+		<Button
+			variant="ghost"
+			size="sm"
+			onclick={toggleSpoiler}
+			class={isSpoilerActive() ? 'bg-accent' : ''}
+			title="Spoiler"
+		>
+			<EyeOff class="h-4 w-4" />
 		</Button>
 
 		<Separator orientation="vertical" class="mx-1 h-6" />
