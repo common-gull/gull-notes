@@ -15,6 +15,7 @@
 	} from 'lucide-svelte';
 	import { lockVault } from '$lib/stores/vault';
 	import { theme, getResolvedTheme } from '$lib/stores/theme';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		onMenuClick?: () => void;
@@ -58,7 +59,7 @@
 			variant="ghost"
 			size="icon"
 			onclick={onToggleSidebar}
-			title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+			title={sidebarCollapsed ? $t('titleBar.expandSidebar') : $t('titleBar.collapseSidebar')}
 		>
 			{#if sidebarCollapsed}
 				<PanelLeft class="h-5 w-5" />
@@ -69,7 +70,7 @@
 	{/if}
 
 	<div class="flex items-baseline gap-2">
-		<h1 class="text-xl font-semibold">Gull Notes</h1>
+		<h1 class="text-xl font-semibold">{$t('common.appName')}</h1>
 		{#if vaultName}
 			<span class="hidden text-sm text-muted-foreground sm:inline">• {vaultName}</span>
 		{/if}
@@ -90,20 +91,20 @@
 					<DropdownMenu.Item onclick={handleThemeToggle}>
 						{#if isDark}
 							<Sun class="mr-2 h-4 w-4" />
-							Light Mode
+							{$t('titleBar.lightMode')}
 						{:else}
 							<Moon class="mr-2 h-4 w-4" />
-							Dark Mode
+							{$t('titleBar.darkMode')}
 						{/if}
 					</DropdownMenu.Item>
 					<DropdownMenu.Item onclick={handleSettings}>
 						<Settings class="mr-2 h-4 w-4" />
-						Settings
+						{$t('titleBar.settings')}
 					</DropdownMenu.Item>
 					<DropdownMenu.Separator />
 					<DropdownMenu.Item onclick={handleLock}>
 						<Lock class="mr-2 h-4 w-4" />
-						Lock Vault
+						{$t('vault.lockVault')}
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
@@ -112,7 +113,7 @@
 			<Button
 				variant="ghost"
 				size="icon"
-				title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+				title={isDark ? $t('titleBar.switchToLight') : $t('titleBar.switchToDark')}
 				onclick={handleThemeToggle}
 			>
 				{#if isDark}
@@ -121,10 +122,10 @@
 					<Moon class="h-5 w-5" />
 				{/if}
 			</Button>
-			<Button variant="ghost" size="icon" title="Settings" onclick={handleSettings}>
+			<Button variant="ghost" size="icon" title={$t('titleBar.settings')} onclick={handleSettings}>
 				<Settings class="h-5 w-5" />
 			</Button>
-			<Button variant="ghost" size="icon" title="Lock Vault" onclick={handleLock}>
+			<Button variant="ghost" size="icon" title={$t('vault.lockVault')} onclick={handleLock}>
 				<Lock class="h-5 w-5" />
 			</Button>
 		{/if}

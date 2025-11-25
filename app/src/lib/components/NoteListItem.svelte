@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Note } from '$lib/types';
 	import { selectedNoteId } from '$lib/stores/notes';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		note: Omit<Note, 'content'>;
@@ -18,13 +19,13 @@
 		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
 		if (days === 0) {
-			return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+			return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 		} else if (days === 1) {
-			return 'Yesterday';
+			return $t('notes.date.yesterday');
 		} else if (days < 7) {
-			return `${days} days ago`;
+			return $t('notes.date.daysAgo', { count: days });
 		} else {
-			return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+			return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 		}
 	}
 </script>
@@ -38,7 +39,7 @@
 >
 	<div class="flex flex-col gap-1">
 		<div class="truncate text-sm font-medium">
-			{note.metadata.title || 'Untitled Note'}
+			{note.metadata.title || $t('notes.untitled')}
 		</div>
 		<div class="flex items-center justify-between">
 			<div class="text-xs text-muted-foreground">

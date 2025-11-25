@@ -21,6 +21,7 @@
 	} from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		isMobile?: boolean;
@@ -48,7 +49,7 @@
 		const noteId = crypto.randomUUID();
 
 		const metadata: DecryptedMetadata = {
-			title: 'Untitled Note',
+			title: $t('notes.untitled'),
 			tags: [],
 			color: undefined
 		};
@@ -101,7 +102,7 @@
 						<Button variant="ghost" size="icon" onclick={() => onOpenChange && onOpenChange(false)}>
 							<ArrowLeft class="h-5 w-5" />
 						</Button>
-						<h2 class="text-lg font-semibold">Notes</h2>
+						<h2 class="text-lg font-semibold">{$t('notes.title')}</h2>
 					</div>
 					<Button size="sm" onclick={createNewNote}>
 						<Plus class="h-4 w-4" />
@@ -115,7 +116,7 @@
 						/>
 						<Input
 							type="search"
-							placeholder="Search notes..."
+							placeholder={$t('notes.searchPlaceholder')}
 							class="pl-9"
 							bind:value={$searchQuery}
 						/>
@@ -123,9 +124,10 @@
 					<TagFilter />
 					{#if hasActiveFilters}
 						<div class="flex items-center justify-between text-xs text-muted-foreground">
-							<span>Showing {filteredCount} of {totalCount}</span>
+							<span>{$t('notes.showingCount', { filtered: filteredCount, total: totalCount })}</span
+							>
 							<Button variant="ghost" size="sm" onclick={clearAllFilters} class="h-6 text-xs">
-								Clear
+								{$t('common.clear')}
 							</Button>
 						</div>
 					{/if}
@@ -146,7 +148,9 @@
 								<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 							{/each}
 						{:else}
-							<div class="py-8 text-center text-sm text-muted-foreground">No notes found</div>
+							<div class="py-8 text-center text-sm text-muted-foreground">
+								{$t('notes.noNotesFound')}
+							</div>
 						{/if}
 					</div>
 				</ScrollArea>
@@ -160,7 +164,7 @@
 			: 'w-[280px]'}"
 	>
 		<div class="flex items-center justify-between p-4">
-			<h2 class="text-lg font-semibold">Notes</h2>
+			<h2 class="text-lg font-semibold">{$t('notes.title')}</h2>
 			<Button size="sm" onclick={createNewNote}>
 				<Plus class="h-4 w-4" />
 			</Button>
@@ -171,14 +175,19 @@
 				<Search
 					class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
 				/>
-				<Input type="search" placeholder="Search notes..." class="pl-9" bind:value={$searchQuery} />
+				<Input
+					type="search"
+					placeholder={$t('notes.searchPlaceholder')}
+					class="pl-9"
+					bind:value={$searchQuery}
+				/>
 			</div>
 			<TagFilter />
 			{#if hasActiveFilters}
 				<div class="flex items-center justify-between text-xs text-muted-foreground">
-					<span>Showing {filteredCount} of {totalCount}</span>
+					<span>{$t('notes.showingCount', { filtered: filteredCount, total: totalCount })}</span>
 					<Button variant="ghost" size="sm" onclick={clearAllFilters} class="h-6 text-xs">
-						Clear
+						{$t('common.clear')}
 					</Button>
 				</div>
 			{/if}
@@ -199,7 +208,9 @@
 						<NoteListItem {note} onclick={() => handleNoteClick(note.id)} />
 					{/each}
 				{:else}
-					<div class="py-8 text-center text-sm text-muted-foreground">No notes found</div>
+					<div class="py-8 text-center text-sm text-muted-foreground">
+						{$t('notes.noNotesFound')}
+					</div>
 				{/if}
 			</div>
 		</ScrollArea>

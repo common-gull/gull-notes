@@ -4,6 +4,7 @@
 	import { selectedNoteId, notesLoading, getActiveDatabase } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
+	import { t } from '$lib/i18n';
 
 	async function createFirstNote() {
 		const db = getActiveDatabase();
@@ -22,13 +23,13 @@
 		const noteId = crypto.randomUUID();
 
 		const metadata: DecryptedMetadata = {
-			title: 'My First Note',
+			title: $t('notes.welcomeTitle'),
 			tags: ['welcome'],
 			color: undefined
 		};
 
 		const content: DecryptedContent = {
-			body: '<h1>Welcome to Gull Notes!</h1><p>Start writing your thoughts securely.</p>'
+			body: `<h1>${$t('notes.welcomeTitle')}</h1><p>${$t('notes.welcomeBody')}</p>`
 		};
 
 		const metaEncrypted = await encryptData(metadata, key);
@@ -56,9 +57,9 @@
 			<Loader2 class="h-12 w-12 animate-spin text-muted-foreground" />
 		</div>
 
-		<h2 class="mb-2 text-2xl font-semibold">Loading notes...</h2>
+		<h2 class="mb-2 text-2xl font-semibold">{$t('notes.loadingNotes')}</h2>
 		<p class="mb-6 max-w-sm text-muted-foreground">
-			Decrypting your notes securely. This may take a moment.
+			{$t('notes.decryptingNotes')}
 		</p>
 	</div>
 {:else}
@@ -68,15 +69,14 @@
 			<FileText class="h-12 w-12 text-muted-foreground" />
 		</div>
 
-		<h2 class="mb-2 text-2xl font-semibold">No notes yet</h2>
+		<h2 class="mb-2 text-2xl font-semibold">{$t('notes.noNotesYet')}</h2>
 		<p class="mb-6 max-w-sm text-muted-foreground">
-			Start your secure note-taking journey by creating your first note. Your data is encrypted and
-			stored locally.
+			{$t('notes.noNotesDescription')}
 		</p>
 
 		<Button size="lg" onclick={createFirstNote}>
 			<Plus class="mr-2 h-5 w-5" />
-			Create Your First Note
+			{$t('notes.createFirst')}
 		</Button>
 	</div>
 {/if}

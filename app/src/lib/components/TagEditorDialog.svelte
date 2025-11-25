@@ -3,6 +3,7 @@
 	import { Input } from './ui/input';
 	import { XIcon, PlusIcon } from 'lucide-svelte';
 	import { allExistingTags } from '$lib/stores/notes';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		tags: string[];
@@ -78,7 +79,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 	<div class="w-full max-w-md rounded-lg border border-border bg-card shadow-lg">
 		<div class="flex items-center justify-between border-b border-border p-6">
-			<h2 class="text-xl font-bold">Manage Tags</h2>
+			<h2 class="text-xl font-bold">{$t('tags.manageTitle')}</h2>
 			<button
 				onclick={onClose}
 				class="text-muted-foreground transition-colors hover:text-foreground"
@@ -110,7 +111,7 @@
 
 			<!-- Tag input with autocomplete -->
 			<div class="space-y-2">
-				<label for="tag-input" class="text-sm font-medium">Add Tag</label>
+				<label for="tag-input" class="text-sm font-medium">{$t('tags.addTag')}</label>
 				<div class="relative">
 					<div class="flex gap-2">
 						<Input
@@ -119,7 +120,7 @@
 							onkeydown={handleInputKeydown}
 							onfocus={handleInputFocus}
 							onblur={handleInputBlur}
-							placeholder="Type a tag name..."
+							placeholder={$t('tags.placeholder')}
 							class="flex-1"
 						/>
 						<Button
@@ -153,15 +154,15 @@
 					{/if}
 				</div>
 				<p class="text-xs text-muted-foreground">
-					Press Enter to add a tag or select from suggestions
+					{$t('tags.hint')}
 				</p>
 			</div>
 		</div>
 
 		<!-- Footer with actions -->
 		<div class="flex justify-end gap-2 border-t border-border p-6">
-			<Button variant="outline" onclick={onClose}>Cancel</Button>
-			<Button onclick={handleSave}>Save Tags</Button>
+			<Button variant="outline" onclick={onClose}>{$t('common.cancel')}</Button>
+			<Button onclick={handleSave}>{$t('tags.saveTags')}</Button>
 		</div>
 	</div>
 </div>

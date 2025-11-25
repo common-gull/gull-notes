@@ -20,6 +20,7 @@
 		EyeOff
 	} from 'lucide-svelte';
 	import type { Editor } from '@tiptap/core';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		editor: Editor | null;
@@ -136,7 +137,7 @@
 			size="sm"
 			onclick={toggleSpoiler}
 			class={isSpoilerActive() ? 'bg-accent' : ''}
-			title="Spoiler"
+			title={$t('editor.spoiler')}
 		>
 			<EyeOff class="h-4 w-4" />
 		</Button>

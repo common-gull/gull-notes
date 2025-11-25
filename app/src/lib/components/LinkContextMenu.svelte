@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { ExternalLink, Pencil, Trash2 } from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		open: boolean;
@@ -53,12 +54,12 @@
 		<div class="flex flex-col gap-1">
 			<Button variant="ghost" size="sm" class="justify-start gap-2" onclick={handleVisit}>
 				<ExternalLink class="h-4 w-4" />
-				<span class="flex-1 text-left">Visit Link</span>
+				<span class="flex-1 text-left">{$t('link.visitLink')}</span>
 			</Button>
 
 			<Button variant="ghost" size="sm" class="justify-start gap-2" onclick={handleEdit}>
 				<Pencil class="h-4 w-4" />
-				<span class="flex-1 text-left">Edit Link</span>
+				<span class="flex-1 text-left">{$t('link.editLink')}</span>
 			</Button>
 
 			<Button
@@ -68,7 +69,7 @@
 				onclick={handleRemove}
 			>
 				<Trash2 class="h-4 w-4" />
-				<span class="flex-1 text-left">Remove Link</span>
+				<span class="flex-1 text-left">{$t('link.removeButton')}</span>
 			</Button>
 		</div>
 	</div>

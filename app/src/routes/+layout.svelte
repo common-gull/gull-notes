@@ -4,6 +4,7 @@
 	import { theme, getResolvedTheme, watchSystemTheme } from '$lib/stores/theme';
 	import { browser } from '$app/environment';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { t } from '$lib/i18n';
 
 	let { children } = $props();
 
@@ -35,7 +36,7 @@
 </script>
 
 <svelte:head>
-	<title>Gull Notes</title>
+	<title>{$t('common.appName')}</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 

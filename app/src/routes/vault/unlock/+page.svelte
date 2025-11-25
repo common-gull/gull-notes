@@ -4,10 +4,9 @@
 	import { resolve } from '$app/paths';
 	import { selectedVaultForUnlock, clearVaultSelection, unlockVault } from '$lib/stores/vault';
 	import { setupDatabaseHooks } from '$lib/stores/notes';
-
-	// Custom wrapper component to avoid passing vault store functions to PasswordPrompt
 	import { LockKeyholeIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import { t } from '$lib/i18n';
 
 	let password = $state('');
 	let showPassword = $state(false);
@@ -34,7 +33,7 @@
 	async function handleUnlock() {
 		const vault = $selectedVaultForUnlock;
 		if (!password || !vault) {
-			error = 'Please enter a password';
+			error = $t('password.enterPassword');
 			return;
 		}
 
@@ -51,7 +50,7 @@
 			await goto(resolve('/vault'));
 		} catch (err) {
 			console.error('Failed to unlock vault:', err);
-			error = err instanceof Error ? err.message : 'Failed to unlock vault';
+			error = err instanceof Error ? err.message : $t('vault.failedToUnlock');
 			password = ''; // Clear password on error
 			passwordInput?.focus();
 		} finally {
@@ -84,9 +83,9 @@
 				>
 					<LockKeyholeIcon class="h-8 w-8 text-primary" />
 				</div>
-				<h1 class="mb-2 text-3xl font-bold">Unlock Vault</h1>
+				<h1 class="mb-2 text-3xl font-bold">{$t('vault.unlockTitle')}</h1>
 				<p class="text-muted-foreground">
-					Enter your password to access <strong>{$selectedVaultForUnlock.name}</strong>
+					{$t('vault.unlockDescription', { name: $selectedVaultForUnlock.name })}
 				</p>
 			</div>
 
@@ -98,7 +97,7 @@
 				{/if}
 
 				<div class="space-y-2">
-					<label for="password" class="text-sm font-medium">Password</label>
+					<label for="password" class="text-sm font-medium">{$t('password.label')}</label>
 					<div class="relative">
 						<input
 							id="password"
@@ -106,7 +105,7 @@
 							type={showPassword ? 'text' : 'password'}
 							bind:value={password}
 							onkeydown={handleKeydown}
-							placeholder="Enter your password"
+							placeholder={$t('password.placeholder')}
 							disabled={unlocking}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 						/>
@@ -127,16 +126,16 @@
 
 				<div class="flex gap-3">
 					<Button onclick={handleCancel} variant="outline" class="flex-1" disabled={unlocking}>
-						Cancel
+						{$t('common.cancel')}
 					</Button>
 					<Button onclick={handleUnlock} class="flex-1" disabled={unlocking || !password}>
 						{#if unlocking}
 							<span
 								class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
 							></span>
-							Unlocking...
+							{$t('vault.unlocking')}
 						{:else}
-							Unlock
+							{$t('vault.unlock')}
 						{/if}
 					</Button>
 				</div>

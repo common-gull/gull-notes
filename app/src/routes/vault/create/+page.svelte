@@ -7,6 +7,7 @@
 	import { openDatabase } from '$lib/db';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { DatabaseIcon, CheckIcon, XIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	let vaultName = $state('');
 	let password = $state('');
@@ -35,10 +36,11 @@
 		if (/\d/.test(password)) score++;
 		if (/[^a-zA-Z0-9]/.test(password)) score++;
 
-		if (score <= 1) return { score, label: 'Weak', color: 'text-destructive' };
-		if (score <= 3) return { score, label: 'Fair', color: 'text-yellow-500' };
-		if (score <= 4) return { score, label: 'Good', color: 'text-blue-500' };
-		return { score, label: 'Strong', color: 'text-green-500' };
+		if (score <= 1)
+			return { score, label: $t('password.strength.weak'), color: 'text-destructive' };
+		if (score <= 3) return { score, label: $t('password.strength.fair'), color: 'text-yellow-500' };
+		if (score <= 4) return { score, label: $t('password.strength.good'), color: 'text-blue-500' };
+		return { score, label: $t('password.strength.strong'), color: 'text-green-500' };
 	});
 
 	let isValid = $derived(
@@ -73,7 +75,7 @@
 			await goto(resolve('/vault'));
 		} catch (err) {
 			console.error('Failed to create vault:', err);
-			error = err instanceof Error ? err.message : 'Failed to create vault';
+			error = err instanceof Error ? err.message : $t('vault.failedToCreate');
 			creating = false;
 		}
 	}
@@ -105,8 +107,8 @@
 			>
 				<DatabaseIcon class="h-8 w-8 text-primary" />
 			</div>
-			<h1 class="mb-2 text-3xl font-bold">Create New Vault</h1>
-			<p class="text-muted-foreground">Set up a secure encrypted vault for your notes</p>
+			<h1 class="mb-2 text-3xl font-bold">{$t('vault.createTitle')}</h1>
+			<p class="text-muted-foreground">{$t('vault.createDescription')}</p>
 		</div>
 
 		<div class="space-y-6">
@@ -117,28 +119,28 @@
 			{/if}
 
 			<div class="space-y-2">
-				<label for="vault-name" class="text-sm font-medium">Vault Name</label>
+				<label for="vault-name" class="text-sm font-medium">{$t('vault.vaultName')}</label>
 				<input
 					id="vault-name"
 					bind:this={vaultNameInput}
 					bind:value={vaultName}
 					onkeydown={handleKeydown}
-					placeholder="My Personal Notes"
+					placeholder={$t('vault.vaultNamePlaceholder')}
 					disabled={creating}
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 				/>
-				<p class="text-xs text-muted-foreground">Display name for your vault (not encrypted)</p>
+				<p class="text-xs text-muted-foreground">{$t('vault.vaultNameHint')}</p>
 			</div>
 
 			<div class="space-y-2">
-				<label for="password" class="text-sm font-medium">Password</label>
+				<label for="password" class="text-sm font-medium">{$t('password.label')}</label>
 				<div class="relative">
 					<input
 						id="password"
 						type={showPassword ? 'text' : 'password'}
 						bind:value={password}
 						onkeydown={handleKeydown}
-						placeholder="Enter a strong password"
+						placeholder={$t('password.enterStrong')}
 						disabled={creating}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 					/>
@@ -169,14 +171,16 @@
 			</div>
 
 			<div class="space-y-2">
-				<label for="confirm-password" class="text-sm font-medium">Confirm Password</label>
+				<label for="confirm-password" class="text-sm font-medium"
+					>{$t('password.confirmLabel')}</label
+				>
 				<div class="relative">
 					<input
 						id="confirm-password"
 						type={showConfirmPassword ? 'text' : 'password'}
 						bind:value={confirmPassword}
 						onkeydown={handleKeydown}
-						placeholder="Re-enter your password"
+						placeholder={$t('password.confirmPlaceholder')}
 						disabled={creating}
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 					/>
@@ -196,18 +200,18 @@
 				{#if confirmPassword && password !== confirmPassword}
 					<p class="flex items-center gap-1 text-sm text-destructive">
 						<XIcon class="h-3 w-3" />
-						Passwords do not match
+						{$t('password.noMatch')}
 					</p>
 				{:else if confirmPassword && password === confirmPassword}
 					<p class="flex items-center gap-1 text-sm text-green-500">
 						<CheckIcon class="h-3 w-3" />
-						Passwords match
+						{$t('password.match')}
 					</p>
 				{/if}
 			</div>
 
 			<div class="rounded-lg bg-muted/50 p-4 text-sm">
-				<p class="mb-2 font-medium">Password requirements:</p>
+				<p class="mb-2 font-medium">{$t('password.requirements.title')}</p>
 				<ul class="space-y-1.5">
 					<li
 						class="flex items-center gap-2 {password.length >= 8
@@ -219,31 +223,31 @@
 						{:else}
 							<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
 						{/if}
-						At least 8 characters
+						{$t('password.requirements.minLength')}
 					</li>
 					<li class="flex items-center gap-2 text-muted-foreground">
 						<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
-						Mix of uppercase and lowercase letters
+						{$t('password.requirements.mixCase')}
 					</li>
 					<li class="flex items-center gap-2 text-muted-foreground">
 						<span class="flex h-4 w-4 items-center justify-center text-xs">•</span>
-						Include numbers and special characters
+						{$t('password.requirements.specialChars')}
 					</li>
 				</ul>
 			</div>
 
 			<div class="flex gap-3 pt-2">
 				<Button onclick={handleCancel} variant="outline" class="flex-1" disabled={creating}>
-					Cancel
+					{$t('common.cancel')}
 				</Button>
 				<Button onclick={handleCreate} class="flex-1" disabled={!isValid || creating}>
 					{#if creating}
 						<span
 							class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
 						></span>
-						Creating...
+						{$t('vault.creating')}
 					{:else}
-						Create Vault
+						{$t('vault.createVault')}
 					{/if}
 				</Button>
 			</div>

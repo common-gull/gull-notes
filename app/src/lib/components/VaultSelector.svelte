@@ -5,6 +5,7 @@
 	import Button from './ui/button/button.svelte';
 	import { Input } from './ui/input';
 	import { PlusIcon, DatabaseIcon, Upload, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		onSelectVault: (vaultId: string) => void;
@@ -31,7 +32,7 @@
 			vaults = await listVaults();
 		} catch (err) {
 			console.error('Failed to load vaults:', err);
-			error = 'Failed to load vaults';
+			error = $t('vault.failedToLoad');
 		} finally {
 			loading = false;
 		}
@@ -76,10 +77,11 @@
 			onSelectVault(newVaultId);
 		} catch (err) {
 			console.error('Failed to import vault:', err);
-			const errorMessage = err instanceof Error ? err.message : 'Failed to import vault';
+			const errorMessage =
+				err instanceof Error ? err.message : $t('vault.importDialog.failedToImport');
 
 			if (errorMessage.includes('Invalid password')) {
-				importError = 'Incorrect password. Please try again.';
+				importError = $t('vault.importDialog.incorrectPassword');
 			} else {
 				importError = errorMessage;
 			}
@@ -95,10 +97,10 @@
 			<h1
 				class="mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-5xl font-bold text-transparent"
 			>
-				Gull Notes
+				{$t('common.appName')}
 			</h1>
-			<h2 class="mb-2 text-3xl font-semibold">Select a Vault</h2>
-			<p class="text-muted-foreground">Choose a vault to unlock, or create a new one</p>
+			<h2 class="mb-2 text-3xl font-semibold">{$t('vault.selectTitle')}</h2>
+			<p class="text-muted-foreground">{$t('vault.selectDescription')}</p>
 		</div>
 
 		{#if loading}
@@ -106,7 +108,7 @@
 				<div
 					class="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary"
 				></div>
-				<p class="mt-4 text-muted-foreground">Loading vaults...</p>
+				<p class="mt-4 text-muted-foreground">{$t('vault.loadingVaults')}</p>
 			</div>
 		{:else if error}
 			<div class="mb-6 rounded-lg bg-destructive/10 p-4 text-destructive">
@@ -115,8 +117,8 @@
 		{:else if vaults.length === 0}
 			<div class="mb-6 rounded-lg bg-muted/50 py-12 text-center">
 				<DatabaseIcon class="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-				<h2 class="mb-2 text-xl font-semibold">No Vaults Found</h2>
-				<p class="mb-6 text-muted-foreground">Get started by creating your first encrypted vault</p>
+				<h2 class="mb-2 text-xl font-semibold">{$t('vault.noVaultsFound')}</h2>
+				<p class="mb-6 text-muted-foreground">{$t('vault.noVaultsDescription')}</p>
 			</div>
 		{:else}
 			<div class="mb-6 max-h-96 space-y-3 overflow-y-auto">
@@ -133,12 +135,12 @@
 						<div class="min-w-0 flex-1">
 							<h3 class="truncate text-lg font-semibold">{vault.name}</h3>
 							<p class="text-sm text-muted-foreground">
-								Created {formatDate(vault.createdAt)}
+								{$t('vault.created', { date: formatDate(vault.createdAt) })}
 							</p>
 						</div>
 						<div class="flex-shrink-0">
 							<span class="text-sm text-muted-foreground group-hover:text-foreground">
-								Select →
+								{$t('vault.select')}
 							</span>
 						</div>
 					</button>
@@ -149,11 +151,11 @@
 		<div class="flex gap-3">
 			<Button onclick={() => (showImportDialog = true)} variant="outline" class="flex-1" size="lg">
 				<Upload class="mr-2 h-5 w-5" />
-				Import Vault
+				{$t('vault.importVault')}
 			</Button>
 			<Button onclick={onCreateVault} class="flex-1" size="lg">
 				<PlusIcon class="mr-2 h-5 w-5" />
-				Create New Vault
+				{$t('vault.createNew')}
 			</Button>
 		</div>
 	</div>
@@ -180,12 +182,14 @@
 	>
 		<div class="w-full max-w-md rounded-lg border border-border bg-card shadow-lg">
 			<div class="flex items-center justify-between border-b border-border p-6">
-				<h2 id="import-dialog-title" class="text-2xl font-bold">Import Vault</h2>
+				<h2 id="import-dialog-title" class="text-2xl font-bold">
+					{$t('vault.importDialog.title')}
+				</h2>
 				<button
 					onclick={() => (showImportDialog = false)}
 					class="text-muted-foreground transition-colors hover:text-foreground"
 					disabled={importing}
-					aria-label="Close dialog"
+					aria-label={$t('common.close')}
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -213,7 +217,9 @@
 				{/if}
 
 				<div class="space-y-2">
-					<label for="import-file" class="text-sm font-medium">Vault File</label>
+					<label for="import-file" class="text-sm font-medium"
+						>{$t('vault.importDialog.vaultFile')}</label
+					>
 					<input
 						id="import-file"
 						type="file"
@@ -223,18 +229,18 @@
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					/>
 					{#if importFile}
-						<p class="text-xs text-muted-foreground">Selected: {importFile.name}</p>
+						<p class="text-xs text-muted-foreground">{$t('common.selected')}: {importFile.name}</p>
 					{/if}
 				</div>
 
 				<div class="space-y-2">
-					<label for="import-password" class="text-sm font-medium">Password</label>
+					<label for="import-password" class="text-sm font-medium">{$t('password.label')}</label>
 					<div class="relative">
 						<input
 							id="import-password"
 							type={showImportPassword ? 'text' : 'password'}
 							bind:value={importPassword}
-							placeholder="Enter vault password"
+							placeholder={$t('password.placeholder')}
 							disabled={importing}
 							class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 						/>
@@ -255,13 +261,15 @@
 
 				<div class="space-y-2">
 					<label for="import-name" class="text-sm font-medium"
-						>Vault Name <span class="text-muted-foreground">(optional)</span></label
+						>{$t('vault.importDialog.vaultNameLabel')}
+						<span class="text-muted-foreground">{$t('vault.importDialog.vaultNameOptional')}</span
+						></label
 					>
 					<Input
 						id="import-name"
 						type="text"
 						bind:value={importVaultName}
-						placeholder="Leave empty to use original name"
+						placeholder={$t('vault.importDialog.vaultNamePlaceholder')}
 						disabled={importing}
 					/>
 				</div>
@@ -274,7 +282,7 @@
 					class="flex-1"
 					disabled={importing}
 				>
-					Cancel
+					{$t('common.cancel')}
 				</Button>
 				<Button
 					onclick={handleImport}
@@ -283,9 +291,9 @@
 				>
 					{#if importing}
 						<div class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"></div>
-						Importing...
+						{$t('vault.importDialog.importing')}
 					{:else}
-						Import
+						{$t('common.import')}
 					{/if}
 				</Button>
 			</div>

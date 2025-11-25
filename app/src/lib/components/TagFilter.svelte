@@ -3,6 +3,7 @@
 	import { ScrollArea } from './ui/scroll-area';
 	import { FilterIcon } from 'lucide-svelte';
 	import { allExistingTags, selectedTagFilter, notesWithMetadata } from '$lib/stores/notes';
+	import { t } from '$lib/i18n';
 
 	let showDropdown = $state(false);
 
@@ -66,7 +67,7 @@
 		class="w-full justify-start gap-2"
 	>
 		<FilterIcon class="h-4 w-4" />
-		<span class="flex-1 text-left">Filter by Tags</span>
+		<span class="flex-1 text-left">{$t('tags.filterByTags')}</span>
 		{#if $selectedTagFilter.size > 0}
 			<span
 				class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground"
@@ -81,13 +82,15 @@
 			class="absolute top-full z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg"
 		>
 			{#if $allExistingTags.length === 0}
-				<div class="p-4 text-center text-sm text-muted-foreground">No tags available</div>
+				<div class="p-4 text-center text-sm text-muted-foreground">
+					{$t('tags.noTagsAvailable')}
+				</div>
 			{:else}
 				<div class="flex items-center justify-between border-b border-border p-2">
-					<span class="text-sm font-medium">Select Tags</span>
+					<span class="text-sm font-medium">{$t('tags.selectTags')}</span>
 					{#if $selectedTagFilter.size > 0}
 						<Button variant="ghost" size="sm" onclick={clearAllFilters} class="h-7 text-xs">
-							Clear All
+							{$t('common.clearAll')}
 						</Button>
 					{/if}
 				</div>

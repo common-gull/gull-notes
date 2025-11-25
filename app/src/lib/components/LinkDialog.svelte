@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		open: boolean;
@@ -43,19 +44,19 @@
 		<Dialog.Overlay />
 		<Dialog.Content class="sm:max-w-[425px]">
 			<Dialog.Header>
-				<Dialog.Title>{initialUrl ? 'Edit Link' : 'Add Link'}</Dialog.Title>
+				<Dialog.Title>{initialUrl ? $t('link.editTitle') : $t('link.addTitle')}</Dialog.Title>
 				<Dialog.Description>
-					{initialUrl ? 'Update the URL for this link.' : 'Enter a URL to create a hyperlink.'}
+					{initialUrl ? $t('link.editDescription') : $t('link.addDescription')}
 				</Dialog.Description>
 			</Dialog.Header>
 			<form onsubmit={handleSubmit}>
 				<div class="grid gap-4 py-4">
 					<div class="grid gap-2">
-						<label for="url" class="text-sm font-medium">URL</label>
+						<label for="url" class="text-sm font-medium">{$t('link.urlLabel')}</label>
 						<Input
 							id="url"
 							type="url"
-							placeholder="https://example.com"
+							placeholder={$t('link.urlPlaceholder')}
 							bind:value={url}
 							autofocus
 						/>
@@ -63,11 +64,13 @@
 				</div>
 				<Dialog.Footer class="gap-2">
 					{#if initialUrl && onRemove}
-						<Button type="button" variant="destructive" onclick={handleRemove}>Remove Link</Button>
+						<Button type="button" variant="destructive" onclick={handleRemove}
+							>{$t('link.removeButton')}</Button
+						>
 					{/if}
-					<Button type="button" variant="outline" onclick={onClose}>Cancel</Button>
+					<Button type="button" variant="outline" onclick={onClose}>{$t('common.cancel')}</Button>
 					<Button type="submit" disabled={!url.trim()}>
-						{initialUrl ? 'Update' : 'Add'} Link
+						{initialUrl ? $t('link.updateButton') : $t('link.addButton')}
 					</Button>
 				</Dialog.Footer>
 			</form>

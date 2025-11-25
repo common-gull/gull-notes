@@ -1,0 +1,209 @@
+{
+	"common": {
+		"appName": "Gull Notes",
+		"cancel": "Cancel",
+		"save": "Save",
+		"delete": "Delete",
+		"error": "Error",
+		"loading": "Loading...",
+		"saving": "Saving...",
+		"close": "Close",
+		"confirm": "Confirm",
+		"clear": "Clear",
+		"clearAll": "Clear All",
+		"import": "Import",
+		"export": "Export",
+		"selected": "Selected"
+	},
+	"vault": {
+		"selectTitle": "Select a Vault",
+		"selectDescription": "Choose a vault to unlock, or create a new one",
+		"loadingVaults": "Loading vaults...",
+		"noVaultsFound": "No Vaults Found",
+		"noVaultsDescription": "Get started by creating your first encrypted vault",
+		"created": "Created {{date}}",
+		"select": "Select →",
+		"importVault": "Import Vault",
+		"createNew": "Create New Vault",
+		"createTitle": "Create New Vault",
+		"createDescription": "Set up a secure encrypted vault for your notes",
+		"unlockTitle": "Unlock Vault",
+		"unlockDescription": "Enter your password to access {{name}}",
+		"unlocking": "Unlocking...",
+		"unlock": "Unlock",
+		"creating": "Creating...",
+		"createVault": "Create Vault",
+		"lockVault": "Lock Vault",
+		"vaultName": "Vault Name",
+		"vaultNamePlaceholder": "My Personal Notes",
+		"vaultNameHint": "Display name for your vault (not encrypted)",
+		"currentVault": "Current Vault: {{name}}",
+		"failedToLoad": "Failed to load vaults",
+		"failedToCreate": "Failed to create vault",
+		"failedToUnlock": "Failed to unlock vault",
+		"importDialog": {
+			"title": "Import Vault",
+			"vaultFile": "Vault File",
+			"vaultNameLabel": "Vault Name",
+			"vaultNameOptional": "(optional)",
+			"vaultNamePlaceholder": "Leave empty to use original name",
+			"importing": "Importing...",
+			"incorrectPassword": "Incorrect password. Please try again.",
+			"failedToImport": "Failed to import vault"
+		}
+	},
+	"password": {
+		"label": "Password",
+		"placeholder": "Enter your password",
+		"enterPassword": "Please enter a password",
+		"enterStrong": "Enter a strong password",
+		"confirmLabel": "Confirm Password",
+		"confirmPlaceholder": "Re-enter your password",
+		"confirmNewLabel": "Confirm New Password",
+		"confirmNewPlaceholder": "Re-enter new password",
+		"currentLabel": "Current Password",
+		"currentPlaceholder": "Enter current password",
+		"newLabel": "New Password",
+		"newPlaceholder": "Enter new password",
+		"exportPlaceholder": "Enter password to export",
+		"match": "Passwords match",
+		"noMatch": "Passwords do not match",
+		"strength": {
+			"weak": "Weak",
+			"fair": "Fair",
+			"good": "Good",
+			"strong": "Strong"
+		},
+		"requirements": {
+			"title": "Password requirements:",
+			"minLength": "At least 8 characters",
+			"mixCase": "Mix of uppercase and lowercase letters",
+			"specialChars": "Include numbers and special characters"
+		}
+	},
+	"settings": {
+		"title": "Settings",
+		"vaultInfo": {
+			"title": "Vault Information",
+			"name": "Vault Name",
+			"created": "Created",
+			"notes": "Notes",
+			"noteCount": "{{count}} note",
+			"noteCount_plural": "{{count}} notes"
+		},
+		"backup": {
+			"title": "Backup",
+			"exportTitle": "Export Vault",
+			"exportDescription": "Download a backup of your vault. All data remains encrypted.",
+			"confirmPassword": "Confirm Password",
+			"exporting": "Exporting...",
+			"exportButton": "Export Vault",
+			"incorrectPassword": "Incorrect password"
+		},
+		"security": {
+			"title": "Security",
+			"changePassword": "Change Password",
+			"changePasswordDescription": "Update your vault password. All notes will be re-encrypted.",
+			"verifying": "Verifying current password...",
+			"reEncrypting": "Re-encrypting notes...",
+			"success": "Password changed successfully!",
+			"redirecting": "Redirecting in {{count}}...",
+			"doNotClose": "Please do not close this window...",
+			"progress": "{{current}} / {{total}} notes ({{percent}}%)",
+			"warning": {
+				"title": "Important:",
+				"reEncrypt": "All notes will be re-encrypted with new keys",
+				"noCancelNote": "This process cannot be cancelled once started",
+				"logoutNote": "You'll be logged out after completion"
+			}
+		},
+		"autoLock": {
+			"title": "Auto-Lock",
+			"inactivityTitle": "Inactivity Timeout",
+			"inactivityDescription": "Automatically lock the vault after a period of inactivity",
+			"lockAfter": "Lock after",
+			"never": "Never",
+			"minutes": "{{count}} minutes"
+		},
+		"dangerZone": {
+			"title": "Danger Zone",
+			"deleteVault": "Delete Vault",
+			"deleteDescription": "Permanently delete this vault and all its notes. This action cannot be undone.",
+			"deleteButton": "Delete Vault",
+			"deleteConfirmTitle": "Warning: This action is permanent!",
+			"deleteConfirmNotes": "All {{count}} note will be permanently deleted",
+			"deleteConfirmNotes_plural": "All {{count}} notes will be permanently deleted",
+			"deleteConfirmNoRecover": "This vault cannot be recovered after deletion",
+			"deleteConfirmLogout": "You will be logged out immediately",
+			"typeToConfirm": "Type {{name}} to confirm",
+			"enterVaultName": "Enter vault name",
+			"deleting": "Deleting...",
+			"deletePermanently": "Delete Permanently"
+		}
+	},
+	"notes": {
+		"title": "Notes",
+		"searchPlaceholder": "Search notes...",
+		"noNotesFound": "No notes found",
+		"noNotesYet": "No notes yet",
+		"noNotesDescription": "Start your secure note-taking journey by creating your first note. Your data is encrypted and stored locally.",
+		"createFirst": "Create Your First Note",
+		"loadingNotes": "Loading notes...",
+		"decryptingNotes": "Decrypting your notes securely. This may take a moment.",
+		"untitled": "Untitled Note",
+		"showingCount": "Showing {{filtered}} of {{total}}",
+		"date": {
+			"yesterday": "Yesterday",
+			"daysAgo": "{{count}} days ago"
+		},
+		"welcomeTitle": "Welcome to Gull Notes!",
+		"welcomeBody": "Start writing your thoughts securely."
+	},
+	"tags": {
+		"label": "Tags",
+		"manageTitle": "Manage Tags",
+		"addTag": "Add Tag",
+		"placeholder": "Type a tag name...",
+		"hint": "Press Enter to add a tag or select from suggestions",
+		"saveTags": "Save Tags",
+		"filterByTags": "Filter by Tags",
+		"selectTags": "Select Tags",
+		"noTagsAvailable": "No tags available"
+	},
+	"editor": {
+		"spoiler": "Spoiler",
+		"copyAsMarkdown": "Copy as Markdown",
+		"noteCopied": "Note copied as markdown",
+		"failedToCopy": "Failed to copy note",
+		"copyNotAvailable": "Copy function not available"
+	},
+	"link": {
+		"addTitle": "Add Link",
+		"editTitle": "Edit Link",
+		"addDescription": "Enter a URL to create a hyperlink.",
+		"editDescription": "Update the URL for this link.",
+		"urlLabel": "URL",
+		"urlPlaceholder": "https://example.com",
+		"addButton": "Add Link",
+		"updateButton": "Update Link",
+		"removeButton": "Remove Link",
+		"visitLink": "Visit Link",
+		"editLink": "Edit Link"
+	},
+	"titleBar": {
+		"expandSidebar": "Expand sidebar",
+		"collapseSidebar": "Collapse sidebar",
+		"lightMode": "Light Mode",
+		"darkMode": "Dark Mode",
+		"switchToLight": "Switch to light mode",
+		"switchToDark": "Switch to dark mode",
+		"settings": "Settings"
+	},
+	"deleteNote": {
+		"title": "Delete Note",
+		"confirm": "Are you sure you want to delete this note?",
+		"warning": "This action cannot be undone. The note will be permanently deleted.",
+		"deleting": "Deleting...",
+		"deleteButton": "Delete Note"
+	}
+}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from './ui/button/button.svelte';
 	import { XIcon, AlertTriangleIcon } from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		noteTitle: string;
@@ -41,7 +42,7 @@
 >
 	<div class="w-full max-w-md rounded-lg border border-border bg-card shadow-lg">
 		<div class="flex items-center justify-between border-b border-border p-6">
-			<h2 class="text-xl font-semibold">Delete Note</h2>
+			<h2 class="text-xl font-semibold">{$t('deleteNote.title')}</h2>
 			<button
 				onclick={onCancel}
 				class="text-muted-foreground transition-colors hover:text-foreground"
@@ -58,25 +59,26 @@
 					<AlertTriangleIcon class="h-5 w-5 text-destructive" />
 				</div>
 				<div class="flex-1 space-y-2">
-					<p class="text-sm">Are you sure you want to delete this note?</p>
+					<p class="text-sm">{$t('deleteNote.confirm')}</p>
 					<p class="text-sm font-semibold text-foreground">
 						"{noteTitle}"
 					</p>
 					<p class="text-xs text-muted-foreground">
-						This action cannot be undone. The note will be permanently deleted.
+						{$t('deleteNote.warning')}
 					</p>
 				</div>
 			</div>
 		</div>
 
 		<div class="flex items-center justify-end gap-3 border-t border-border p-6">
-			<Button variant="outline" onclick={onCancel} disabled={deleting}>Cancel</Button>
+			<Button variant="outline" onclick={onCancel} disabled={deleting}>{$t('common.cancel')}</Button
+			>
 			<Button variant="destructive" onclick={handleConfirm} disabled={deleting}>
 				{#if deleting}
 					<div class="inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-					<span>Deleting...</span>
+					<span>{$t('deleteNote.deleting')}</span>
 				{:else}
-					Delete Note
+					{$t('deleteNote.deleteButton')}
 				{/if}
 			</Button>
 		</div>

@@ -7,6 +7,7 @@
 	import { updateNoteMetadata, deleteNote, selectedNoteId } from '$lib/stores/notes';
 	import type { DecryptedMetadata } from '$lib/types';
 	import { toast } from 'svelte-sonner';
+	import { t } from '$lib/i18n';
 
 	interface Props {
 		noteId: string;
@@ -38,7 +39,7 @@
 		if (isSaving) return;
 
 		const trimmedTitle = editingTitleValue.trim();
-		const finalTitle = trimmedTitle || 'Untitled Note';
+		const finalTitle = trimmedTitle || $t('notes.untitled');
 
 		// Only save if changed
 		if (finalTitle !== metadata.title) {
@@ -94,7 +95,7 @@
 
 	async function handleCopyAsMarkdown() {
 		if (!getMarkdown) {
-			toast.error('Copy function not available');
+			toast.error($t('editor.copyNotAvailable'));
 			return;
 		}
 
@@ -103,16 +104,16 @@
 			const markdown = getMarkdown();
 
 			// Include title as heading at the top
-			const noteTitle = metadata.title || 'Untitled Note';
+			const noteTitle = metadata.title || $t('notes.untitled');
 			const fullMarkdown = `# ${noteTitle}\n\n${markdown}`;
 
 			// Copy to clipboard
 			await navigator.clipboard.writeText(fullMarkdown);
 
-			toast.success('Note copied as markdown');
+			toast.success($t('editor.noteCopied'));
 		} catch (error) {
 			console.error('Failed to copy note as markdown:', error);
-			toast.error('Failed to copy note');
+			toast.error($t('editor.failedToCopy'));
 		}
 	}
 </script>
@@ -128,7 +129,7 @@
 					onkeydown={handleTitleKeydown}
 					onblur={handleTitleBlur}
 					class="w-full border-none bg-transparent px-0 py-1 text-xl font-semibold outline-none focus:ring-0"
-					placeholder="Untitled Note"
+					placeholder={$t('notes.untitled')}
 					disabled={isSaving}
 				/>
 			{:else}
@@ -137,7 +138,7 @@
 					class="w-full truncate py-1 text-left text-xl font-semibold transition-colors hover:text-primary"
 					type="button"
 				>
-					{metadata.title || 'Untitled Note'}
+					{metadata.title || $t('notes.untitled')}
 				</button>
 			{/if}
 		</div>
@@ -160,7 +161,7 @@
 			{/if}
 			<Button variant="outline" size="sm" onclick={() => (showTagDialog = true)} class="gap-1">
 				<TagIcon class="h-4 w-4" />
-				<span class="hidden sm:inline">Tags</span>
+				<span class="hidden sm:inline">{$t('tags.label')}</span>
 			</Button>
 
 			<!-- Action menu -->
@@ -175,14 +176,14 @@
 				<DropdownMenu.Content align="end">
 					<DropdownMenu.Item onclick={handleCopyAsMarkdown}>
 						<Copy class="mr-2 h-4 w-4" />
-						Copy as Markdown
+						{$t('editor.copyAsMarkdown')}
 					</DropdownMenu.Item>
 					<DropdownMenu.Item
 						onclick={() => (showDeleteDialog = true)}
 						class="text-destructive focus:text-destructive"
 					>
 						<Trash2Icon class="mr-2 h-4 w-4" />
-						Delete Note
+						{$t('deleteNote.deleteButton')}
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>

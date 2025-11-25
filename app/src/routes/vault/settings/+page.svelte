@@ -20,6 +20,7 @@
 		Download,
 		ClockIcon
 	} from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	let noteCount = $state(0);
 	let showPasswordForm = $state(false);
@@ -63,10 +64,11 @@
 		if (/\d/.test(newPassword)) score++;
 		if (/[^a-zA-Z0-9]/.test(newPassword)) score++;
 
-		if (score <= 1) return { score, label: 'Weak', color: 'text-destructive' };
-		if (score <= 3) return { score, label: 'Fair', color: 'text-yellow-500' };
-		if (score <= 4) return { score, label: 'Good', color: 'text-blue-500' };
-		return { score, label: 'Strong', color: 'text-green-500' };
+		if (score <= 1)
+			return { score, label: $t('password.strength.weak'), color: 'text-destructive' };
+		if (score <= 3) return { score, label: $t('password.strength.fair'), color: 'text-yellow-500' };
+		if (score <= 4) return { score, label: $t('password.strength.good'), color: 'text-blue-500' };
+		return { score, label: $t('password.strength.strong'), color: 'text-green-500' };
 	});
 
 	let isPasswordFormValid = $derived(
@@ -134,15 +136,15 @@
 		success = false;
 
 		try {
-			stage = 'Verifying current password...';
+			stage = $t('settings.security.verifying');
 			await new Promise((resolve) => setTimeout(resolve, 100)); // Allow UI to update
 
 			await changeVaultPassword($activeVault.id, currentPassword, newPassword, (current, total) => {
-				stage = 'Re-encrypting notes...';
+				stage = $t('settings.security.reEncrypting');
 				progress = { current, total };
 			});
 
-			stage = 'Password changed successfully!';
+			stage = $t('settings.security.success');
 			success = true;
 			countdown = 3;
 
@@ -216,7 +218,7 @@
 			const errorMessage = err instanceof Error ? err.message : 'Failed to export vault';
 
 			if (errorMessage.includes('Invalid password')) {
-				exportError = 'Incorrect password';
+				exportError = $t('settings.backup.incorrectPassword');
 			} else {
 				exportError = errorMessage;
 			}
@@ -266,7 +268,7 @@
 		<Button variant="ghost" size="icon" onclick={() => goto(resolve('/vault'))}>
 			<ArrowLeftIcon class="h-5 w-5" />
 		</Button>
-		<h1 class="text-xl font-semibold">Settings</h1>
+		<h1 class="text-xl font-semibold">{$t('settings.title')}</h1>
 	</header>
 
 	<!-- Content -->
@@ -277,24 +279,24 @@
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
 						<InfoIcon class="h-5 w-5 text-primary" />
-						<h2 class="text-2xl font-bold">Vault Information</h2>
+						<h2 class="text-2xl font-bold">{$t('settings.vaultInfo.title')}</h2>
 					</div>
 
 					<div class="space-y-3 rounded-lg bg-muted/50 p-6">
 						<div class="flex items-start justify-between">
 							<div>
-								<p class="text-sm text-muted-foreground">Vault Name</p>
+								<p class="text-sm text-muted-foreground">{$t('settings.vaultInfo.name')}</p>
 								<p class="text-lg font-semibold">{$activeVault.name}</p>
 							</div>
 						</div>
 
 						<div class="border-t border-border pt-3">
-							<p class="text-sm text-muted-foreground">Created</p>
+							<p class="text-sm text-muted-foreground">{$t('settings.vaultInfo.created')}</p>
 							<p class="font-medium">{formatDate($activeVault.createdAt)}</p>
 						</div>
 
 						<div class="border-t border-border pt-3">
-							<p class="text-sm text-muted-foreground">Notes</p>
+							<p class="text-sm text-muted-foreground">{$t('settings.vaultInfo.notes')}</p>
 							<p class="font-medium">{noteCount} {noteCount === 1 ? 'note' : 'notes'}</p>
 						</div>
 					</div>
@@ -304,15 +306,15 @@
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
 						<Download class="h-5 w-5 text-primary" />
-						<h2 class="text-2xl font-bold">Backup</h2>
+						<h2 class="text-2xl font-bold">{$t('settings.backup.title')}</h2>
 					</div>
 
 					<div class="rounded-lg bg-muted/50 p-6">
 						<div class="space-y-4">
 							<div>
-								<h3 class="mb-1 text-lg font-semibold">Export Vault</h3>
+								<h3 class="mb-1 text-lg font-semibold">{$t('settings.backup.exportTitle')}</h3>
 								<p class="text-sm text-muted-foreground">
-									Download a backup of your vault. All data remains encrypted.
+									{$t('settings.backup.exportDescription')}
 								</p>
 							</div>
 
@@ -323,13 +325,15 @@
 							{/if}
 
 							<div class="space-y-2">
-								<label for="export-password" class="text-sm font-medium">Confirm Password</label>
+								<label for="export-password" class="text-sm font-medium"
+									>{$t('settings.backup.confirmPassword')}</label
+								>
 								<div class="relative">
 									<input
 										id="export-password"
 										type={showExportPassword ? 'text' : 'password'}
 										bind:value={exportPassword}
-										placeholder="Enter password to export"
+										placeholder={$t('password.exportPlaceholder')}
 										disabled={exporting}
 										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 									/>
@@ -357,10 +361,10 @@
 									<div
 										class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-current"
 									></div>
-									Exporting...
+									{$t('settings.backup.exporting')}
 								{:else}
 									<Download class="mr-2 h-4 w-4" />
-									Export Vault
+									{$t('settings.backup.exportButton')}
 								{/if}
 							</Button>
 						</div>
@@ -371,25 +375,29 @@
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
 						<ShieldIcon class="h-5 w-5 text-primary" />
-						<h2 class="text-2xl font-bold">Security</h2>
+						<h2 class="text-2xl font-bold">{$t('settings.security.title')}</h2>
 					</div>
 
 					{#if !showPasswordForm}
 						<div class="rounded-lg bg-muted/50 p-6">
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<h3 class="mb-1 text-lg font-semibold">Change Password</h3>
+									<h3 class="mb-1 text-lg font-semibold">
+										{$t('settings.security.changePassword')}
+									</h3>
 									<p class="text-sm text-muted-foreground">
-										Update your vault password. All notes will be re-encrypted.
+										{$t('settings.security.changePasswordDescription')}
 									</p>
 								</div>
-								<Button onclick={() => (showPasswordForm = true)}>Change Password</Button>
+								<Button onclick={() => (showPasswordForm = true)}
+									>{$t('settings.security.changePassword')}</Button
+								>
 							</div>
 						</div>
 					{:else}
 						<div class="space-y-4 rounded-lg border border-border bg-card p-6">
 							<div class="flex items-center justify-between">
-								<h3 class="text-lg font-semibold">Change Password</h3>
+								<h3 class="text-lg font-semibold">{$t('settings.security.changePassword')}</h3>
 								{#if !changing && !success}
 									<button
 										onclick={() => {
@@ -408,7 +416,7 @@
 
 							{#if error}
 								<div class="space-y-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
-									<p class="font-semibold">Error</p>
+									<p class="font-semibold">{$t('common.error')}</p>
 									<p class="whitespace-pre-line">{error}</p>
 								</div>
 							{/if}
@@ -417,7 +425,7 @@
 								<div class="rounded-lg bg-green-500/10 p-4 text-center text-green-500">
 									<CheckIcon class="mx-auto mb-2 h-8 w-8" />
 									<p class="mb-1 font-semibold">{stage}</p>
-									<p class="text-sm">Redirecting in {countdown}...</p>
+									<p class="text-sm">{$t('settings.security.redirecting', { count: countdown })}</p>
 								</div>
 							{:else if changing}
 								<div class="space-y-3">
@@ -428,9 +436,11 @@
 										<p class="text-sm font-medium">{stage}</p>
 										{#if progress.total > 0}
 											<p class="mt-1 text-xs text-muted-foreground">
-												{progress.current} / {progress.total} notes ({Math.round(
-													(progress.current / progress.total) * 100
-												)}%)
+												{$t('settings.security.progress', {
+													current: progress.current,
+													total: progress.total,
+													percent: Math.round((progress.current / progress.total) * 100)
+												})}
 											</p>
 											<div class="mt-2 h-2 w-full rounded-full bg-muted">
 												<div
@@ -441,14 +451,14 @@
 										{/if}
 									</div>
 									<p class="text-center text-xs text-muted-foreground">
-										Please do not close this window...
+										{$t('settings.security.doNotClose')}
 									</p>
 								</div>
 							{:else}
 								<div class="space-y-4">
 									<div class="space-y-2">
 										<label for="current-password" class="text-sm font-medium"
-											>Current Password</label
+											>{$t('password.currentLabel')}</label
 										>
 										<div class="relative">
 											<input
@@ -456,7 +466,7 @@
 												type={showCurrentPassword ? 'text' : 'password'}
 												bind:value={currentPassword}
 												onkeydown={handleKeydown}
-												placeholder="Enter current password"
+												placeholder={$t('password.currentPlaceholder')}
 												disabled={changing}
 												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
@@ -476,14 +486,16 @@
 									</div>
 
 									<div class="space-y-2">
-										<label for="new-password" class="text-sm font-medium">New Password</label>
+										<label for="new-password" class="text-sm font-medium"
+											>{$t('password.newLabel')}</label
+										>
 										<div class="relative">
 											<input
 												id="new-password"
 												type={showNewPassword ? 'text' : 'password'}
 												bind:value={newPassword}
 												onkeydown={handleKeydown}
-												placeholder="Enter new password"
+												placeholder={$t('password.newPlaceholder')}
 												disabled={changing}
 												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
@@ -515,7 +527,7 @@
 
 									<div class="space-y-2">
 										<label for="confirm-password" class="text-sm font-medium"
-											>Confirm New Password</label
+											>{$t('password.confirmNewLabel')}</label
 										>
 										<div class="relative">
 											<input
@@ -523,7 +535,7 @@
 												type={showConfirmPassword ? 'text' : 'password'}
 												bind:value={confirmPassword}
 												onkeydown={handleKeydown}
-												placeholder="Re-enter new password"
+												placeholder={$t('password.confirmNewPlaceholder')}
 												disabled={changing}
 												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 											/>
@@ -543,12 +555,12 @@
 										{#if confirmPassword && newPassword !== confirmPassword}
 											<p class="flex items-center gap-1 text-sm text-destructive">
 												<XIcon class="h-3 w-3" />
-												Passwords do not match
+												{$t('password.noMatch')}
 											</p>
 										{:else if confirmPassword && newPassword === confirmPassword}
 											<p class="flex items-center gap-1 text-sm text-green-500">
 												<CheckIcon class="h-3 w-3" />
-												Passwords match
+												{$t('password.match')}
 											</p>
 										{/if}
 									</div>
@@ -556,11 +568,11 @@
 									<div
 										class="rounded-lg bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-500"
 									>
-										<p class="mb-1 font-medium">⚠️ Important:</p>
+										<p class="mb-1 font-medium">⚠️ {$t('settings.security.warning.title')}</p>
 										<ul class="list-inside list-disc space-y-0.5 text-xs">
-											<li>All notes will be re-encrypted with new keys</li>
-											<li>This process cannot be cancelled once started</li>
-											<li>You'll be logged out after completion</li>
+											<li>{$t('settings.security.warning.reEncrypt')}</li>
+											<li>{$t('settings.security.warning.noCancelNote')}</li>
+											<li>{$t('settings.security.warning.logoutNote')}</li>
 										</ul>
 									</div>
 
@@ -576,14 +588,14 @@
 											variant="outline"
 											class="flex-1"
 										>
-											Cancel
+											{$t('common.cancel')}
 										</Button>
 										<Button
 											onclick={handleChangePassword}
 											class="flex-1"
 											disabled={!isPasswordFormValid}
 										>
-											Change Password
+											{$t('settings.security.changePassword')}
 										</Button>
 									</div>
 								</div>
@@ -596,20 +608,24 @@
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
 						<ClockIcon class="h-5 w-5 text-primary" />
-						<h2 class="text-2xl font-bold">Auto-Lock</h2>
+						<h2 class="text-2xl font-bold">{$t('settings.autoLock.title')}</h2>
 					</div>
 
 					<div class="rounded-lg bg-muted/50 p-6">
 						<div class="space-y-4">
 							<div>
-								<h3 class="mb-1 text-lg font-semibold">Inactivity Timeout</h3>
+								<h3 class="mb-1 text-lg font-semibold">
+									{$t('settings.autoLock.inactivityTitle')}
+								</h3>
 								<p class="text-sm text-muted-foreground">
-									Automatically lock the vault after a period of inactivity
+									{$t('settings.autoLock.inactivityDescription')}
 								</p>
 							</div>
 
 							<div class="space-y-2">
-								<label for="inactivity-timeout" class="text-sm font-medium">Lock after</label>
+								<label for="inactivity-timeout" class="text-sm font-medium"
+									>{$t('settings.autoLock.lockAfter')}</label
+								>
 								<select
 									id="inactivity-timeout"
 									bind:value={inactivityTimeout}
@@ -617,16 +633,16 @@
 									disabled={savingSettings}
 									class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 								>
-									<option value={0}>Never</option>
-									<option value={5}>5 minutes</option>
-									<option value={10}>10 minutes</option>
-									<option value={15}>15 minutes</option>
-									<option value={30}>30 minutes</option>
+									<option value={0}>{$t('settings.autoLock.never')}</option>
+									<option value={5}>{$t('settings.autoLock.minutes', { count: 5 })}</option>
+									<option value={10}>{$t('settings.autoLock.minutes', { count: 10 })}</option>
+									<option value={15}>{$t('settings.autoLock.minutes', { count: 15 })}</option>
+									<option value={30}>{$t('settings.autoLock.minutes', { count: 30 })}</option>
 								</select>
 							</div>
 
 							{#if savingSettings}
-								<p class="text-sm text-muted-foreground">Saving...</p>
+								<p class="text-sm text-muted-foreground">{$t('common.saving')}</p>
 							{/if}
 						</div>
 					</div>
@@ -636,45 +652,48 @@
 				<section class="space-y-4">
 					<div class="flex items-center gap-2">
 						<TrashIcon class="h-5 w-5 text-destructive" />
-						<h2 class="text-2xl font-bold text-destructive">Danger Zone</h2>
+						<h2 class="text-2xl font-bold text-destructive">{$t('settings.dangerZone.title')}</h2>
 					</div>
 
 					<div class="space-y-4 rounded-lg border border-destructive/20 bg-destructive/10 p-6">
 						<div>
-							<h3 class="mb-1 text-lg font-semibold">Delete Vault</h3>
+							<h3 class="mb-1 text-lg font-semibold">{$t('settings.dangerZone.deleteVault')}</h3>
 							<p class="text-sm text-muted-foreground">
-								Permanently delete this vault and all its notes. This action cannot be undone.
+								{$t('settings.dangerZone.deleteDescription')}
 							</p>
 						</div>
 
 						{#if !showDeleteConfirm}
 							<Button onclick={() => (showDeleteConfirm = true)} variant="destructive">
 								<TrashIcon class="mr-2 h-4 w-4" />
-								Delete Vault
+								{$t('settings.dangerZone.deleteButton')}
 							</Button>
 						{:else}
 							<div class="space-y-4 pt-2">
 								<div class="space-y-2 rounded-lg bg-destructive/20 p-4">
-									<p class="text-sm font-semibold">⚠️ Warning: This action is permanent!</p>
+									<p class="text-sm font-semibold">
+										⚠️ {$t('settings.dangerZone.deleteConfirmTitle')}
+									</p>
 									<ul class="list-inside list-disc space-y-1 text-xs">
 										<li>
-											All {noteCount}
-											{noteCount === 1 ? 'note' : 'notes'} will be permanently deleted
+											{noteCount === 1
+												? $t('settings.dangerZone.deleteConfirmNotes', { count: noteCount })
+												: $t('settings.dangerZone.deleteConfirmNotes_plural', { count: noteCount })}
 										</li>
-										<li>This vault cannot be recovered after deletion</li>
-										<li>You will be logged out immediately</li>
+										<li>{$t('settings.dangerZone.deleteConfirmNoRecover')}</li>
+										<li>{$t('settings.dangerZone.deleteConfirmLogout')}</li>
 									</ul>
 								</div>
 
 								<div class="space-y-2">
 									<label for="delete-confirm" class="text-sm font-medium">
-										Type <strong>{$activeVault.name}</strong> to confirm
+										{$t('settings.dangerZone.typeToConfirm', { name: $activeVault.name })}
 									</label>
 									<input
 										id="delete-confirm"
 										type="text"
 										bind:value={deleteConfirmText}
-										placeholder="Enter vault name"
+										placeholder={$t('settings.dangerZone.enterVaultName')}
 										disabled={deleting}
 										class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
 									/>
@@ -697,7 +716,7 @@
 										class="flex-1"
 										disabled={deleting}
 									>
-										Cancel
+										{$t('common.cancel')}
 									</Button>
 									<Button
 										onclick={handleDeleteVault}
@@ -709,9 +728,9 @@
 											<span
 												class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-b-2 border-background"
 											></span>
-											Deleting...
+											{$t('settings.dangerZone.deleting')}
 										{:else}
-											Delete Permanently
+											{$t('settings.dangerZone.deletePermanently')}
 										{/if}
 									</Button>
 								</div>
