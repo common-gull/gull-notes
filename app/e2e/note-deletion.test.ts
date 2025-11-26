@@ -13,7 +13,7 @@ async function createVaultAndLogin(page, vaultName?: string, password = 'TestPas
 		vaultName = getUniqueVaultName();
 	}
 
-	await page.goto('http://localhost:4173/');
+	await page.goto('http://localhost:4173/vault/select');
 
 	// Create a new vault
 	await page.getByRole('button', { name: 'Create New Vault' }).click();

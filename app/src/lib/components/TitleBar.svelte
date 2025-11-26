@@ -35,7 +35,7 @@
 
 	async function handleLock() {
 		lockVault();
-		await goto(resolve('/'));
+		await goto(resolve('/vault/select'));
 	}
 
 	async function handleSettings() {

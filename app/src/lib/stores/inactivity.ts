@@ -105,7 +105,7 @@ function handleInactivityLock(): void {
 	if (currentVaultId) {
 		goto(resolve('/vault/unlock'));
 	} else {
-		goto(resolve('/'));
+		goto(resolve('/vault/select'));
 	}
 }
 

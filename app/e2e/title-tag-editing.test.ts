@@ -10,7 +10,7 @@ test.describe('Title and Tag Editing', () => {
 	// No beforeEach needed - each test creates its own unique vault
 
 	test('should create vault, note, and edit title', async ({ page }) => {
-		await page.goto('http://localhost:4173/');
+		await page.goto('http://localhost:4173/vault/select');
 
 		const vaultName = getUniqueVaultName();
 
@@ -76,7 +76,7 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should add and manage tags', async ({ page }) => {
-		await page.goto('http://localhost:4173/');
+		await page.goto('http://localhost:4173/vault/select');
 
 		const vaultName = getUniqueVaultName();
 
@@ -142,7 +142,7 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should show tag autocomplete with existing tags', async ({ page }) => {
-		await page.goto('http://localhost:4173/');
+		await page.goto('http://localhost:4173/vault/select');
 
 		const vaultName = getUniqueVaultName();
 
@@ -209,7 +209,7 @@ test.describe('Title and Tag Editing', () => {
 	});
 
 	test('should persist title and tags across note switches', async ({ page }) => {
-		await page.goto('http://localhost:4173/');
+		await page.goto('http://localhost:4173/vault/select');
 
 		const vaultName = getUniqueVaultName();
 

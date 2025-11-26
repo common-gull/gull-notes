@@ -19,7 +19,7 @@
 	onMount(() => {
 		if (!$selectedVaultForUnlock) {
 			shouldRedirect = true;
-			goto(resolve('/'));
+			goto(resolve('/vault/select'));
 		}
 	});
 
@@ -60,7 +60,7 @@
 
 	async function handleCancel() {
 		clearVaultSelection();
-		await goto(resolve('/'));
+		await goto(resolve('/vault/select'));
 	}
 
 	function handleKeydown(e: KeyboardEvent) {

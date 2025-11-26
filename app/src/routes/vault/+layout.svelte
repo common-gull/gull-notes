@@ -34,7 +34,7 @@
 	}
 
 	// Routes that don't require an unlocked vault
-	const publicVaultRoutes = ['/vault/unlock', '/vault/create'];
+	const publicVaultRoutes = ['/vault/select', '/vault/unlock', '/vault/create'];
 
 	onMount(() => {
 		// Check current route
@@ -43,7 +43,7 @@
 
 		// Only check for active vault on protected routes
 		if (!isPublicRoute && !$activeVault) {
-			goto(resolve('/'));
+			goto(resolve('/vault/select'));
 			return;
 		}
 

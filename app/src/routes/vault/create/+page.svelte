@@ -81,7 +81,7 @@
 	}
 
 	async function handleCancel() {
-		await goto(resolve('/'));
+		await goto(resolve('/vault/select'));
 	}
 
 	function handleKeydown(e: KeyboardEvent) {

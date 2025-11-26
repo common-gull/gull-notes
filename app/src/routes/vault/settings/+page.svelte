@@ -156,9 +156,9 @@
 						clearInterval(countdownTimer);
 						countdownTimer = null;
 					}
-					// Lock vault and redirect to unlock
+					// Lock vault and redirect to select
 					lockVault();
-					goto(resolve('/'));
+					goto(resolve('/vault/select'));
 				}
 			}, 1000);
 		} catch (err) {
@@ -189,9 +189,9 @@
 		try {
 			await deleteVault($activeVault.id);
 
-			// Lock vault and redirect to home
+			// Lock vault and redirect to select
 			lockVault();
-			await goto(resolve('/'));
+			await goto(resolve('/vault/select'));
 		} catch (err) {
 			console.error('Failed to delete vault:', err);
 			error = err instanceof Error ? err.message : 'Failed to delete vault';
@@ -247,7 +247,7 @@
 
 	onMount(() => {
 		if (!$activeVault) {
-			goto(resolve('/'));
+			goto(resolve('/vault/select'));
 			return;
 		}
 		loadVaultInfo();

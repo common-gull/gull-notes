@@ -1,4 +1,28 @@
 {
+	"landing": {
+		"beta": "Beta",
+		"tagline": "Private notes that stay private. Encrypted on your device, readable only by you.",
+		"getStarted": "Open Your Vaults",
+		"features": {
+			"encrypted": {
+				"title": "AES-256 Encryption",
+				"description": "Your note titles, tags, and content are encrypted before they ever touch storage."
+			},
+			"local": {
+				"title": "Local-First",
+				"description": "Runs entirely in your browser. No account needed to get started."
+			},
+			"zeroKnowledge": {
+				"title": "You're in Control",
+				"description": "Only you can decrypt your notes. No exceptions."
+			}
+		},
+		"encryption": {
+			"title": "What's encrypted?",
+			"description": "Your note titles, content, and tags are encrypted with AES-256-GCM. Vault names are not encrypted so they can be displayed before unlock."
+		},
+		"disclaimer": "Like any app, your security is only as strong as your browser. Keep it updated and use extensions you trust."
+	},
 	"common": {
 		"appName": "Gull Notes",
 		"cancel": "Cancel",
