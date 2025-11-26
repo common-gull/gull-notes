@@ -21,7 +21,7 @@
 	});
 </script>
 
-<div class="fixed inset-0 z-50 flex flex-col bg-background">
+<div class="flex min-h-screen flex-col bg-background">
 	<!-- Hero Section -->
 	<div class="flex flex-1 flex-col items-center justify-center px-6 py-12">
 		<div class="w-full max-w-2xl text-center">

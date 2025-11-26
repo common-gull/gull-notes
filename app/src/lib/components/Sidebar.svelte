@@ -133,7 +133,7 @@
 					{/if}
 				</div>
 				<Separator />
-				<ScrollArea class="flex-1 px-2">
+				<ScrollArea class="min-h-0 flex-1 px-2">
 					{#if $folders && $folders.folders.length > 0}
 						<div class="py-2">
 							<FolderTree folders={$folders.folders} />
@@ -193,7 +193,7 @@
 			{/if}
 		</div>
 		<Separator />
-		<ScrollArea class="flex-1 px-2">
+		<ScrollArea class="min-h-0 flex-1 px-2">
 			{#if $folders && $folders.folders.length > 0}
 				<div class="py-2">
 					<FolderTree folders={$folders.folders} />
