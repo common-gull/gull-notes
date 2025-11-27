@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from './ui/button/button.svelte';
-	import { XIcon, AlertTriangleIcon } from 'lucide-svelte';
+	import XIcon from '@lucide/svelte/icons/x';
+	import AlertTriangleIcon from '@lucide/svelte/icons/triangle-alert';
 	import { t } from '$lib/i18n';
 
 	interface Props {

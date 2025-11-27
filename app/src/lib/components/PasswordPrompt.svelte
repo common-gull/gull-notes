@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { openVault } from '$lib/services/vaults';
 	import Button from './ui/button/button.svelte';
-	import { LockKeyholeIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import type { NotesDatabase } from '$lib/db';
 
 	interface Props {

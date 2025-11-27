@@ -5,13 +5,11 @@
 	import { activeVault } from '$lib/stores/vault';
 	import { t } from '$lib/i18n';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import {
-		ShieldCheckIcon,
-		LockIcon,
-		EyeOffIcon,
-		DatabaseIcon,
-		ArrowRightIcon
-	} from 'lucide-svelte';
+	import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
+	import LockIcon from '@lucide/svelte/icons/lock';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
+	import DatabaseIcon from '@lucide/svelte/icons/database';
+	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 
 	// If already unlocked, redirect to vault
 	onMount(() => {

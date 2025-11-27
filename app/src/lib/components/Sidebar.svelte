@@ -4,7 +4,9 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Plus, Search, ArrowLeft } from 'lucide-svelte';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Search from '@lucide/svelte/icons/search';
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import FolderTree from './FolderTree.svelte';
 	import NoteListItem from './NoteListItem.svelte';
 	import NoteListSkeleton from './NoteListSkeleton.svelte';

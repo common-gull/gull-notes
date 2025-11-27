@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from './ui/button';
 	import { ScrollArea } from './ui/scroll-area';
-	import { FilterIcon } from 'lucide-svelte';
+	import FilterIcon from '@lucide/svelte/icons/filter';
 	import { allExistingTags, selectedTagFilter, notesWithMetadata } from '$lib/stores/notes';
 	import { t } from '$lib/i18n';
 

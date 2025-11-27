@@ -4,7 +4,9 @@
 	import { resolve } from '$app/paths';
 	import { selectedVaultForUnlock, clearVaultSelection, unlockVault } from '$lib/stores/vault';
 	import { setupDatabaseHooks } from '$lib/stores/notes';
-	import { LockKeyholeIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { t } from '$lib/i18n';
 

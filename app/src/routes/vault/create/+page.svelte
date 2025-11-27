@@ -6,7 +6,11 @@
 	import { setupDatabaseHooks } from '$lib/stores/notes';
 	import { openDatabase } from '$lib/db';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import { DatabaseIcon, CheckIcon, XIcon, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import DatabaseIcon from '@lucide/svelte/icons/database';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import XIcon from '@lucide/svelte/icons/x';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import { t } from '$lib/i18n';
 
 	let vaultName = $state('');

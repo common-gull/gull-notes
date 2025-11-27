@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Folder } from '$lib/types';
 	import { toggleFolder, expandedFolders } from '$lib/stores/notes';
-	import { ChevronRight, ChevronDown, Folder as FolderIcon } from 'lucide-svelte';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import FolderIcon from '@lucide/svelte/icons/folder';
 	import FolderTree from './FolderTree.svelte';
 
 	interface Props {

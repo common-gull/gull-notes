@@ -3,7 +3,11 @@
 	import { changeVaultPassword, exportVault } from '$lib/services/vaults';
 	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
 	import Button from './ui/button/button.svelte';
-	import { XIcon, CheckIcon, EyeIcon, EyeOffIcon, Download } from 'lucide-svelte';
+	import XIcon from '@lucide/svelte/icons/x';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
+	import Download from '@lucide/svelte/icons/download';
 
 	interface Props {
 		vaultId: string;

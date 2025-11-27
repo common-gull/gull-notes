@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { Button } from './ui/button';
-	import { TagIcon, MoreVerticalIcon, Trash2Icon, Copy } from 'lucide-svelte';
+	import TagIcon from '@lucide/svelte/icons/tag';
+	import MoreVerticalIcon from '@lucide/svelte/icons/more-vertical';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import Copy from '@lucide/svelte/icons/copy';
 	import * as DropdownMenu from './ui/dropdown-menu';
 	import TagEditorDialog from './TagEditorDialog.svelte';
 	import DeleteNoteDialog from './DeleteNoteDialog.svelte';

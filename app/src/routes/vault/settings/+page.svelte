@@ -8,18 +8,16 @@
 	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
 	import { getVaultSettings, updateVaultSettings } from '$lib/services/vault-settings';
 	import Button from '$lib/components/ui/button/button.svelte';
-	import {
-		ArrowLeftIcon,
-		CheckIcon,
-		EyeIcon,
-		EyeOffIcon,
-		XIcon,
-		InfoIcon,
-		ShieldIcon,
-		TrashIcon,
-		Download,
-		ClockIcon
-	} from 'lucide-svelte';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
+	import XIcon from '@lucide/svelte/icons/x';
+	import InfoIcon from '@lucide/svelte/icons/info';
+	import ShieldIcon from '@lucide/svelte/icons/shield';
+	import TrashIcon from '@lucide/svelte/icons/trash';
+	import Download from '@lucide/svelte/icons/download';
+	import ClockIcon from '@lucide/svelte/icons/clock';
 	import { t } from '$lib/i18n';
 
 	let noteCount = $state(0);

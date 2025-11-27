@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { ExternalLink, Pencil, Trash2 } from 'lucide-svelte';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Pencil from '@lucide/svelte/icons/pencil';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { t } from '$lib/i18n';
 
 	interface Props {

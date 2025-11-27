@@ -4,7 +4,11 @@
 	import type { VaultInfo } from '$lib/types';
 	import Button from './ui/button/button.svelte';
 	import { Input } from './ui/input';
-	import { PlusIcon, DatabaseIcon, Upload, EyeIcon, EyeOffIcon } from 'lucide-svelte';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import DatabaseIcon from '@lucide/svelte/icons/database';
+	import Upload from '@lucide/svelte/icons/upload';
+	import EyeIcon from '@lucide/svelte/icons/eye';
+	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import { t } from '$lib/i18n';
 
 	interface Props {

@@ -3,16 +3,14 @@
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import {
-		Menu,
-		Lock,
-		Settings,
-		PanelLeftClose,
-		PanelLeft,
-		Sun,
-		Moon,
-		EllipsisVertical
-	} from 'lucide-svelte';
+	import Menu from '@lucide/svelte/icons/menu';
+	import Lock from '@lucide/svelte/icons/lock';
+	import Settings from '@lucide/svelte/icons/settings';
+	import PanelLeftClose from '@lucide/svelte/icons/panel-left-close';
+	import PanelLeft from '@lucide/svelte/icons/panel-left';
+	import Sun from '@lucide/svelte/icons/sun';
+	import Moon from '@lucide/svelte/icons/moon';
+	import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
 	import { lockVault } from '$lib/stores/vault';
 	import { theme, getResolvedTheme } from '$lib/stores/theme';
 	import { t } from '$lib/i18n';

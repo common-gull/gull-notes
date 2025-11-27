@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Button } from './ui/button';
 	import { Input } from './ui/input';
-	import { XIcon, PlusIcon } from 'lucide-svelte';
+	import XIcon from '@lucide/svelte/icons/x';
+	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { allExistingTags } from '$lib/stores/notes';
 	import { t } from '$lib/i18n';
 

@@ -2,23 +2,21 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 	import LinkDialog from './LinkDialog.svelte';
-	import {
-		Bold,
-		Italic,
-		Code,
-		Strikethrough,
-		Underline,
-		Link,
-		Heading1,
-		Heading2,
-		List,
-		ListOrdered,
-		ListTodo,
-		Quote,
-		Undo,
-		Redo,
-		EyeOff
-	} from 'lucide-svelte';
+	import Bold from '@lucide/svelte/icons/bold';
+	import Italic from '@lucide/svelte/icons/italic';
+	import Code from '@lucide/svelte/icons/code';
+	import Strikethrough from '@lucide/svelte/icons/strikethrough';
+	import Underline from '@lucide/svelte/icons/underline';
+	import Link from '@lucide/svelte/icons/link';
+	import Heading1 from '@lucide/svelte/icons/heading-1';
+	import Heading2 from '@lucide/svelte/icons/heading-2';
+	import List from '@lucide/svelte/icons/list';
+	import ListOrdered from '@lucide/svelte/icons/list-ordered';
+	import ListTodo from '@lucide/svelte/icons/list-todo';
+	import Quote from '@lucide/svelte/icons/quote';
+	import Undo from '@lucide/svelte/icons/undo';
+	import Redo from '@lucide/svelte/icons/redo';
+	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import type { Editor } from '@tiptap/core';
 	import { t } from '$lib/i18n';
 

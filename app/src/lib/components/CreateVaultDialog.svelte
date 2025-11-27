@@ -2,7 +2,9 @@
 	import { createVault } from '$lib/services/vaults';
 	import Button from './ui/button/button.svelte';
 	import Input from './ui/input/input.svelte';
-	import { XIcon, CheckIcon, AlertCircleIcon } from 'lucide-svelte';
+	import XIcon from '@lucide/svelte/icons/x';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import AlertCircleIcon from '@lucide/svelte/icons/circle-alert';
 	import type { NotesDatabase } from '$lib/db';
 	import { openDatabase } from '$lib/db';
 

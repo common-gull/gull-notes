@@ -1,7 +1,9 @@
 <script lang="ts">
-	import TipTapEditor from '$lib/components/TipTapEditor.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import EditorSkeleton from '$lib/components/EditorSkeleton.svelte';
 	import { filteredNotes, selectedNoteId, notesWithMetadata } from '$lib/stores/notes';
+
+	const TipTapEditor = import('$lib/components/TipTapEditor.svelte');
 
 	// Auto-select first note when notes are loaded (only if no note is selected)
 	$effect(() => {
@@ -15,7 +17,11 @@
 </script>
 
 {#if hasNotes && $selectedNoteId}
-	<TipTapEditor />
+	{#await TipTapEditor}
+		<EditorSkeleton />
+	{:then module}
+		<module.default />
+	{/await}
 {:else}
 	<EmptyState />
 {/if}

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { FileText, Plus, Loader2 } from 'lucide-svelte';
+	import FileText from '@lucide/svelte/icons/file-text';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import { selectedNoteId, notesLoading, getActiveDatabase } from '$lib/stores/notes';
 	import { encryptData, sessionKeyManager } from '$lib/services/encryption';
 	import type { DecryptedMetadata, DecryptedContent } from '$lib/types';
