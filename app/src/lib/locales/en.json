@@ -37,7 +37,8 @@
 		"clearAll": "Clear All",
 		"import": "Import",
 		"export": "Export",
-		"selected": "Selected"
+		"selected": "Selected",
+		"or": "or"
 	},
 	"vault": {
 		"selectTitle": "Select a Vault",
@@ -138,7 +139,9 @@
 				"title": "Important:",
 				"reEncrypt": "All notes will be re-encrypted with new keys",
 				"noCancelNote": "This process cannot be cancelled once started",
-				"logoutNote": "You'll be logged out after completion"
+				"logoutNote": "You'll be logged out after completion",
+				"passkeysTitle": "Passkeys will be removed",
+				"passkeysNote": "You have {{count}} passkey(s) registered. They will be removed when you change your password and must be re-added afterwards."
 			}
 		},
 		"autoLock": {
@@ -229,5 +232,25 @@
 		"warning": "This action cannot be undone. The note will be permanently deleted.",
 		"deleting": "Deleting...",
 		"deleteButton": "Delete Note"
+	},
+	"passkeys": {
+		"title": "Passkeys",
+		"description": "Use fingerprint, face, or security key to unlock your vault",
+		"addPasskey": "Add Passkey",
+		"usePasskey": "Use Passkey",
+		"noPasskeys": "No passkeys registered",
+		"namePasskey": "Name this passkey",
+		"namePlaceholder": "e.g., MacBook Touch ID",
+		"registering": "Registering...",
+		"lastUsed": "Last used {{date}}",
+		"today": "today",
+		"remove": "Remove",
+		"confirmDelete": "Remove passkey \"{{name}}\"? You won't be able to use it to unlock this vault.",
+		"failedToAdd": "Failed to add passkey",
+		"failedToRemove": "Failed to remove passkey",
+		"prfNotSupported": "This authenticator doesn't support vault encryption",
+		"updatePasskeys": "Update Passkeys",
+		"updateDescription": "Authenticate each passkey to update it with your new encryption key",
+		"skipRemaining": "Skip remaining (will be removed)"
 	}
 }

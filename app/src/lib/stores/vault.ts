@@ -5,6 +5,7 @@ import { openVault, getVaultMetadata } from '$lib/services/vaults';
 import { sessionKeyManager } from '$lib/services/encryption';
 import { getVaultSettings } from '$lib/services/vault-settings';
 import { startMonitoring, stopMonitoring } from './inactivity';
+import { unlockWithPasskey as webauthnUnlock } from '$lib/services/webauthn';
 
 interface VaultState {
 	selectedVaultForUnlock: VaultInfo | null;
@@ -41,10 +42,9 @@ export function clearVaultSelection(): void {
 }
 
 /**
- * Unlock a vault and set it as active
+ * Shared logic for activating a vault after unlock
  */
-export async function unlockVault(vaultId: string, password: string): Promise<NotesDatabase> {
-	const db = await openVault(vaultId, password);
+async function activateUnlockedVault(vaultId: string, db: NotesDatabase): Promise<void> {
 	const metadata = await getVaultMetadata(vaultId);
 
 	if (!metadata) {
@@ -72,7 +72,23 @@ export async function unlockVault(vaultId: string, password: string): Promise<No
 		console.error('Failed to load vault settings for inactivity monitoring:', error);
 		// Continue even if settings load fails
 	}
+}
 
+/**
+ * Unlock a vault with password and set it as active
+ */
+export async function unlockVault(vaultId: string, password: string): Promise<NotesDatabase> {
+	const db = await openVault(vaultId, password);
+	await activateUnlockedVault(vaultId, db);
+	return db;
+}
+
+/**
+ * Unlock a vault with passkey and set it as active
+ */
+export async function unlockVaultWithPasskey(vaultId: string): Promise<NotesDatabase> {
+	const db = await webauthnUnlock(vaultId);
+	await activateUnlockedVault(vaultId, db);
 	return db;
 }
 

@@ -2,13 +2,20 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { selectedVaultForUnlock, clearVaultSelection, unlockVault } from '$lib/stores/vault';
+	import {
+		selectedVaultForUnlock,
+		clearVaultSelection,
+		unlockVault,
+		unlockVaultWithPasskey
+	} from '$lib/stores/vault';
 	import { setupDatabaseHooks } from '$lib/stores/notes';
 	import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
+	import FingerprintIcon from '@lucide/svelte/icons/fingerprint';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { t } from '$lib/i18n';
+	import { hasPasskeys, isWebAuthnSupported } from '$lib/services/webauthn';
 
 	let password = $state('');
 	let showPassword = $state(false);
@@ -16,12 +23,21 @@
 	let error = $state<string | null>(null);
 	let passwordInput: HTMLInputElement | null = $state(null);
 	let shouldRedirect = $state(false);
+	let hasRegisteredPasskeys = $state(false);
+	let webauthnSupported = $state(false);
 
-	// Check if vault is selected on mount
-	onMount(() => {
+	// Check if vault is selected on mount and if passkeys are available
+	onMount(async () => {
 		if (!$selectedVaultForUnlock) {
 			shouldRedirect = true;
 			goto(resolve('/vault/select'));
+			return;
+		}
+
+		// Check for WebAuthn support and registered passkeys
+		webauthnSupported = isWebAuthnSupported();
+		if (webauthnSupported) {
+			hasRegisteredPasskeys = await hasPasskeys($selectedVaultForUnlock.id);
 		}
 	});
 
@@ -63,6 +79,29 @@
 	async function handleCancel() {
 		clearVaultSelection();
 		await goto(resolve('/vault/select'));
+	}
+
+	async function handlePasskeyUnlock() {
+		const vault = $selectedVaultForUnlock;
+		if (!vault) return;
+
+		unlocking = true;
+		error = null;
+
+		try {
+			const db = await unlockVaultWithPasskey(vault.id);
+
+			// Set up database hooks (activeDatabase is set automatically via store subscription)
+			setupDatabaseHooks(db);
+
+			// Navigate to vault
+			await goto(resolve('/vault'));
+		} catch (err) {
+			console.error('Failed to unlock with passkey:', err);
+			error = err instanceof Error ? err.message : $t('vault.failedToUnlock');
+		} finally {
+			unlocking = false;
+		}
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -125,6 +164,24 @@
 						</button>
 					</div>
 				</div>
+
+				{#if hasRegisteredPasskeys}
+					<div class="relative flex items-center py-2">
+						<div class="flex-grow border-t border-border"></div>
+						<span class="mx-4 flex-shrink text-xs text-muted-foreground">{$t('common.or')}</span>
+						<div class="flex-grow border-t border-border"></div>
+					</div>
+
+					<Button
+						onclick={handlePasskeyUnlock}
+						variant="outline"
+						class="w-full"
+						disabled={unlocking}
+					>
+						<FingerprintIcon class="mr-2 h-4 w-4" />
+						{$t('passkeys.usePasskey')}
+					</Button>
+				{/if}
 
 				<div class="flex gap-3">
 					<Button onclick={handleCancel} variant="outline" class="flex-1" disabled={unlocking}>

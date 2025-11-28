@@ -7,6 +7,14 @@
 	import { changeVaultPassword, deleteVault, exportVault } from '$lib/services/vaults';
 	import { downloadBlob, generateExportFilename } from '$lib/utils/file';
 	import { getVaultSettings, updateVaultSettings } from '$lib/services/vault-settings';
+	import {
+		isWebAuthnSupported,
+		getVaultCredentials,
+		registerPasskey,
+		removePasskey
+	} from '$lib/services/webauthn';
+	import { sessionKeyManager } from '$lib/services/encryption';
+	import type { WebAuthnCredential } from '$lib/types';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -18,6 +26,8 @@
 	import TrashIcon from '@lucide/svelte/icons/trash';
 	import Download from '@lucide/svelte/icons/download';
 	import ClockIcon from '@lucide/svelte/icons/clock';
+	import FingerprintIcon from '@lucide/svelte/icons/fingerprint';
+	import KeyIcon from '@lucide/svelte/icons/key';
 	import { t } from '$lib/i18n';
 
 	let noteCount = $state(0);
@@ -35,6 +45,16 @@
 	// Auto-lock settings
 	let inactivityTimeout = $state(0);
 	let savingSettings = $state(false);
+
+	// Passkeys state
+	let webauthnSupported = $state(false);
+	let passkeys = $state<WebAuthnCredential[]>([]);
+	let showAddPasskey = $state(false);
+	let passkeyName = $state('');
+	let addingPasskey = $state(false);
+	let passkeyError = $state<string | null>(null);
+	let removingPasskeyId = $state<string | null>(null);
+	let passkeyToDelete = $state<WebAuthnCredential | null>(null);
 
 	// Password change state
 	let currentPassword = $state('');
@@ -100,6 +120,16 @@
 				inactivityTimeout = settings.inactivityTimeout;
 			} catch (err) {
 				console.error('Failed to load vault settings:', err);
+			}
+
+			// Load passkeys
+			webauthnSupported = isWebAuthnSupported();
+			if (webauthnSupported) {
+				try {
+					passkeys = await getVaultCredentials(db);
+				} catch (err) {
+					console.error('Failed to load passkeys:', err);
+				}
 			}
 		}
 	}
@@ -225,6 +255,75 @@
 		}
 	}
 
+	async function handleAddPasskey() {
+		if (!passkeyName.trim() || !$activeVault) return;
+
+		// Capture vault ID before any async operations to prevent null reference
+		// if vault is locked during WebAuthn interaction
+		const vaultId = $activeVault.id;
+		const credentialName = passkeyName.trim();
+
+		const dataKey = sessionKeyManager.getKey();
+		if (!dataKey) {
+			passkeyError = 'Session expired. Please unlock the vault again.';
+			return;
+		}
+
+		addingPasskey = true;
+		passkeyError = null;
+
+		try {
+			const newCredential = await registerPasskey(vaultId, dataKey, credentialName);
+			passkeys = [...passkeys, newCredential];
+			showAddPasskey = false;
+			passkeyName = '';
+		} catch (err) {
+			console.error('Failed to add passkey:', err);
+			passkeyError = err instanceof Error ? err.message : $t('passkeys.failedToAdd');
+		} finally {
+			addingPasskey = false;
+		}
+	}
+
+	function handleRemovePasskey(passkey: WebAuthnCredential) {
+		passkeyToDelete = passkey;
+	}
+
+	function cancelRemovePasskey() {
+		passkeyToDelete = null;
+	}
+
+	async function confirmRemovePasskey() {
+		if (!$activeVault || !passkeyToDelete) return;
+
+		// Capture IDs before async operation to prevent null reference
+		const vaultId = $activeVault.id;
+		const credentialId = passkeyToDelete.id;
+
+		removingPasskeyId = credentialId;
+
+		try {
+			await removePasskey(vaultId, credentialId);
+			passkeys = passkeys.filter((p) => p.id !== credentialId);
+			passkeyToDelete = null;
+		} catch (err) {
+			console.error('Failed to remove passkey:', err);
+			passkeyError = err instanceof Error ? err.message : $t('passkeys.failedToRemove');
+		} finally {
+			removingPasskeyId = null;
+		}
+	}
+
+	function formatRelativeDate(timestamp: number): string {
+		const now = Date.now();
+		const diff = now - timestamp;
+		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+		if (days === 0) return $t('passkeys.today');
+		if (days === 1) return $t('notes.date.yesterday');
+		return $t('notes.date.daysAgo', { count: days });
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Enter' && showPasswordForm && isPasswordFormValid && !changing) {
 			handleChangePassword();
@@ -239,6 +338,12 @@
 			} else if (showDeleteConfirm && !deleting) {
 				showDeleteConfirm = false;
 				deleteConfirmText = '';
+			} else if (showAddPasskey && !addingPasskey) {
+				showAddPasskey = false;
+				passkeyName = '';
+				passkeyError = null;
+			} else if (passkeyToDelete && !removingPasskeyId) {
+				passkeyToDelete = null;
 			}
 		}
 	}
@@ -574,6 +679,19 @@
 										</ul>
 									</div>
 
+									{#if passkeys.length > 0}
+										<div
+											class="rounded-lg bg-orange-500/10 p-3 text-sm text-orange-700 dark:text-orange-400"
+										>
+											<p class="mb-1 font-medium">
+												{$t('settings.security.warning.passkeysTitle')}
+											</p>
+											<p class="text-xs">
+												{$t('settings.security.warning.passkeysNote', { count: passkeys.length })}
+											</p>
+										</div>
+									{/if}
+
 									<div class="flex gap-3">
 										<Button
 											onclick={() => {
@@ -601,6 +719,154 @@
 						</div>
 					{/if}
 				</section>
+
+				<!-- Passkeys Section -->
+				{#if webauthnSupported}
+					<section class="space-y-4">
+						<div class="flex items-center gap-2">
+							<FingerprintIcon class="h-5 w-5 text-primary" />
+							<h2 class="text-2xl font-bold">{$t('passkeys.title')}</h2>
+						</div>
+
+						<div class="rounded-lg bg-muted/50 p-6">
+							<div class="space-y-4">
+								<div>
+									<h3 class="mb-1 text-lg font-semibold">{$t('passkeys.title')}</h3>
+									<p class="text-sm text-muted-foreground">
+										{$t('passkeys.description')}
+									</p>
+								</div>
+
+								{#if passkeyError}
+									<div class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+										{passkeyError}
+									</div>
+								{/if}
+
+								<!-- Registered passkeys list -->
+								{#if passkeys.length > 0}
+									<div class="space-y-2">
+										{#each passkeys as passkey (passkey.id)}
+											{#if passkeyToDelete?.id === passkey.id}
+												<!-- Delete confirmation -->
+												<div class="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
+													<p class="mb-3 text-sm">
+														{$t('passkeys.confirmDelete', { name: passkey.name })}
+													</p>
+													<div class="flex gap-2">
+														<Button
+															variant="outline"
+															size="sm"
+															onclick={cancelRemovePasskey}
+															disabled={removingPasskeyId === passkey.id}
+														>
+															{$t('common.cancel')}
+														</Button>
+														<Button
+															variant="destructive"
+															size="sm"
+															onclick={confirmRemovePasskey}
+															disabled={removingPasskeyId === passkey.id}
+														>
+															{#if removingPasskeyId === passkey.id}
+																<div
+																	class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+																></div>
+															{/if}
+															{$t('common.delete')}
+														</Button>
+													</div>
+												</div>
+											{:else}
+												<!-- Normal passkey display -->
+												<div
+													class="flex items-center justify-between rounded-lg border border-border bg-background p-3"
+												>
+													<div class="flex items-center gap-3">
+														<KeyIcon class="h-5 w-5 text-muted-foreground" />
+														<div>
+															<p class="font-medium">{passkey.name}</p>
+															<p class="text-xs text-muted-foreground">
+																{$t('passkeys.lastUsed', {
+																	date: formatRelativeDate(passkey.lastUsedAt)
+																})}
+															</p>
+														</div>
+													</div>
+													<Button
+														variant="ghost"
+														size="sm"
+														onclick={() => handleRemovePasskey(passkey)}
+														disabled={passkeyToDelete !== null}
+													>
+														<TrashIcon class="h-4 w-4 text-destructive" />
+													</Button>
+												</div>
+											{/if}
+										{/each}
+									</div>
+								{:else}
+									<p class="text-sm text-muted-foreground">{$t('passkeys.noPasskeys')}</p>
+								{/if}
+
+								<!-- Add passkey form -->
+								{#if showAddPasskey}
+									<div class="space-y-3 rounded-lg border border-border bg-card p-4">
+										<div class="space-y-2">
+											<label for="passkey-name" class="text-sm font-medium">
+												{$t('passkeys.namePasskey')}
+											</label>
+											<input
+												id="passkey-name"
+												type="text"
+												bind:value={passkeyName}
+												placeholder={$t('passkeys.namePlaceholder')}
+												disabled={addingPasskey}
+												onkeydown={(e) => {
+													if (e.key === 'Enter' && passkeyName.trim()) handleAddPasskey();
+												}}
+												class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+											/>
+										</div>
+										<div class="flex gap-2">
+											<Button
+												variant="outline"
+												size="sm"
+												onclick={() => {
+													showAddPasskey = false;
+													passkeyName = '';
+													passkeyError = null;
+												}}
+												disabled={addingPasskey}
+											>
+												{$t('common.cancel')}
+											</Button>
+											<Button
+												size="sm"
+												onclick={handleAddPasskey}
+												disabled={!passkeyName.trim() || addingPasskey}
+											>
+												{#if addingPasskey}
+													<div
+														class="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-background"
+													></div>
+													{$t('passkeys.registering')}
+												{:else}
+													{$t('passkeys.addPasskey')}
+												{/if}
+											</Button>
+										</div>
+									</div>
+								{:else}
+									<Button variant="outline" onclick={() => (showAddPasskey = true)}>
+										<FingerprintIcon class="mr-2 h-4 w-4" />
+										{$t('passkeys.addPasskey')}
+									</Button>
+								{/if}
+							</div>
+						</div>
+					</section>
+				{/if}
 
 				<!-- Auto-Lock Section -->
 				<section class="space-y-4">

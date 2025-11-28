@@ -183,6 +183,7 @@ export async function listAllDatabases(): Promise<string[]> {
 
 /**
  * Change vault password with full key rotation (safe copy-and-replace strategy)
+ * NOTE: Passkeys are NOT migrated during password change. Users must re-register them.
  * @param vaultId Current vault database name
  * @param currentPassword Current password
  * @param newPassword New password
@@ -339,6 +340,10 @@ export async function changeVaultPassword(
 				}
 			});
 		}
+
+		// NOTE: Passkeys are intentionally NOT migrated during password change.
+		// The encryption key changes, so passkeys would need to be re-wrapped with user interaction.
+		// Users must re-register their passkeys after changing their password.
 
 		// Phase 4: Verification
 		// CRITICAL: Verify note count matches before proceeding

@@ -115,3 +115,15 @@ export interface EncryptedKeyData {
 export interface VaultSettings {
 	inactivityTimeout: number; // Minutes until auto-lock (0 = disabled)
 }
+
+/**
+ * WebAuthn credential with PRF-encrypted data key
+ */
+export interface WebAuthnCredential {
+	id: string; // Base64 credential ID
+	name: string; // User label: "MacBook Touch ID"
+	createdAt: number;
+	lastUsedAt: number;
+	encryptedDataKey: ArrayBuffer;
+	dataKeyIv: Uint8Array;
+}
